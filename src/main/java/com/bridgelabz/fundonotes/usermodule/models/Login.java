@@ -1,12 +1,12 @@
-package com.bridgelabz.fundonotes.usermodule.model;
+package com.bridgelabz.fundonotes.usermodule.models;
 
-public class LoginDTO {
+public class Login {
 
 	private String emailId;
 
 	private String password;
 
-	public LoginDTO() {
+	public Login() {
 		super();
 	}
 

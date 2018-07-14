@@ -2,25 +2,28 @@ package com.bridgelabz.fundonotes.usermodule.exceptionhandlers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import com.bridgelabz.fundonotes.usermodule.exception.LoginException;
-import com.bridgelabz.fundonotes.usermodule.exception.RegistrationException;
-import com.bridgelabz.fundonotes.usermodule.model.ResponseDTO;
+import com.bridgelabz.fundonotes.usermodule.exceptions.LoginException;
+import com.bridgelabz.fundonotes.usermodule.exceptions.RegistrationException;
+import com.bridgelabz.fundonotes.usermodule.models.Response;
 
 @ControllerAdvice
 public class UserExceptionHandler {
 
 	private final Logger logger = LoggerFactory.getLogger(UserExceptionHandler.class);
+	
+	@Autowired
+	private Response response;
 
 	@ExceptionHandler(RegistrationException.class)
-	public ResponseEntity<?> handleRegistrationException(RegistrationException exception) {
-		logger.info("Error occured while registration " + exception.getMessage(), exception);
+	public ResponseEntity<Response> handleRegistrationException(RegistrationException exception) {
+		logger.error("Error occured while registration " + exception.getMessage(), exception);
 
-		ResponseDTO response = new ResponseDTO();
 		response.setMessage(exception.getMessage());
 		response.setStatus(1);
 
@@ -28,10 +31,9 @@ public class UserExceptionHandler {
 	}
 
 	@ExceptionHandler(LoginException.class)
-	public ResponseEntity<?> handleRegistrationException(LoginException exception) {
-		logger.info("Error occured while registration " + exception.getMessage(), exception);
+	public ResponseEntity<Response> handleLoginException(LoginException exception) {
+		logger.error("Error occured while login " + exception.getMessage(), exception);
 
-		ResponseDTO response = new ResponseDTO();
 		response.setMessage(exception.getMessage());
 		response.setStatus(2);
 
@@ -39,10 +41,9 @@ public class UserExceptionHandler {
 	}
 	
 	@ExceptionHandler(Exception.class)
-	public ResponseEntity<?> handleRegistrationException(Exception exception){
+	public ResponseEntity<Response> handleException(Exception exception){
 		logger.error("Error occured for " + exception.getMessage(), exception);
 
-		ResponseDTO response = new ResponseDTO();
 		response.setMessage("Something went wrong");
 		response.setStatus(0);
 

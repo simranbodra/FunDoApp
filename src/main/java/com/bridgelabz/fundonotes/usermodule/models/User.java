@@ -1,4 +1,4 @@
-package com.bridgelabz.fundonotes.usermodule.model;
+package com.bridgelabz.fundonotes.usermodule.models;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document
 public class User {
 
-	private String userId;
+	private String _Id;
 	
 	private String userName;
 	
@@ -17,18 +17,18 @@ public class User {
 	
 	private String password;
 	
-	private boolean Status=false;
+	private boolean active;
 
 	public User() {
 		super();
 	}
 	
 	public String getUserId() {
-		return userId;
+		return _Id;
 	}
 
 	public void setUserId(String userId) {
-		this.userId = userId;
+		this._Id = userId;
 	}
 
 	public String getName() {
@@ -64,11 +64,11 @@ public class User {
 	}
 	
 	public boolean isStatus() {
-		return Status;
+		return active;
 	}
 
 	public void setStatus(boolean status) {
-		Status = status;
+		active = status;
 	}
 
 }

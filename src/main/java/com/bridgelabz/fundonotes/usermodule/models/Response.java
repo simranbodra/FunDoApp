@@ -1,11 +1,14 @@
-package com.bridgelabz.fundonotes.usermodule.model;
+package com.bridgelabz.fundonotes.usermodule.models;
 
-public class ResponseDTO {
+import org.springframework.stereotype.Component;
+
+@Component
+public class Response {
 
 	private String message;
 	private int status;
 
-	public ResponseDTO() {
+	public Response() {
 		super();
 	}
 

@@ -1,26 +1,17 @@
-package com.bridgelabz.fundonotes.usermodule.model;
+package com.bridgelabz.fundonotes.usermodule.models;
 
-public class RegistrationDTO {
+public class Registration {
 
-	private String userId;
 	private String userName;
 	private String emailId;
 	private String phoneNumber;
 	private String password;
 	private String confirmPassword;
 
-	public RegistrationDTO() {
+	public Registration() {
 		super();
 	}
 
-	public String getUserId() {
-		return userId;
-	}
-
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
-	
 	public String getUserName() {
 		return userName;
 	}

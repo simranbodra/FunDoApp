@@ -1,6 +1,11 @@
 package com.bridgelabz.fundonotes.usermodule.models;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class Mail {
+
+	
 
 	private String to;
 	private String subject;
@@ -32,5 +37,10 @@ public class Mail {
 
 	public void setBody(String body) {
 		this.body = body;
+	}
+	
+	@Override
+	public String toString() {
+		return "Mail [to=" + to + ", subject=" + subject + ", body=" + body + "]";
 	}
 }

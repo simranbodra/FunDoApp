@@ -63,11 +63,11 @@ public class User {
 		this.password = password;
 	}
 	
-	public boolean isStatus() {
+	public boolean isActive() {
 		return active;
 	}
 
-	public void setStatus(boolean status) {
+	public void setActive(boolean status) {
 		active = status;
 	}
 

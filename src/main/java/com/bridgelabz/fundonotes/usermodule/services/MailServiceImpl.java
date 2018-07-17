@@ -16,8 +16,8 @@ public class MailServiceImpl implements MailService{
 	@Autowired
 	private JavaMailSender javaMailSender;
 	
-	public void sendActivationLink(Mail mail) throws MessagingException {
-		
+	public void sendLink(Mail mail) throws MessagingException {
+		System.out.println("Inside mail");
 		MimeMessage message = javaMailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message);
 		

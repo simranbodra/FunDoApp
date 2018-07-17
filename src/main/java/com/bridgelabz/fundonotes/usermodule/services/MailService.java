@@ -6,5 +6,5 @@ import com.bridgelabz.fundonotes.usermodule.models.Mail;
 
 public interface MailService {
 
-	public void sendActivationLink(Mail mail) throws MessagingException;
+	public void sendLink(Mail mail) throws MessagingException;
 }

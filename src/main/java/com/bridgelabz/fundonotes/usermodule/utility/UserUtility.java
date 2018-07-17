@@ -16,6 +16,7 @@ import com.bridgelabz.fundonotes.usermodule.exceptions.LoginException;
 import com.bridgelabz.fundonotes.usermodule.exceptions.RegistrationException;
 import com.bridgelabz.fundonotes.usermodule.models.Login;
 import com.bridgelabz.fundonotes.usermodule.models.Registration;
+import com.bridgelabz.fundonotes.usermodule.models.ResetPassword;
 import com.bridgelabz.fundonotes.usermodule.models.User;
 
 import io.jsonwebtoken.Claims;
@@ -119,6 +120,7 @@ public class UserUtility {
 		user.setEmail(registrationDto.getEmailId());
 		user.setName(registrationDto.getUserName());
 		user.setPhoneNumber(registrationDto.getPhoneNumber());
+		
 		user.setPassword(registrationDto.getPassword());
 		return user;
 	}
@@ -133,5 +135,13 @@ public class UserUtility {
 		}
 	}
 	
-	
+	public static void validateUserForResetPassword(ResetPassword resetPassword) throws LoginException {
+		if (resetPassword.getPassword() == null || (!validatePassword(resetPassword.getPassword()))) {
+			throw new LoginException("Password should have atleast one uppercase character, "
+					+ "atlest one lowercase character, " + "one special character, " + "and atleast one number");
+		}
+		if (resetPassword.getConfirmPassword() == null || (!resetPassword.getPassword().equals(resetPassword.getConfirmPassword()))) {
+			throw new LoginException("password should match with confirm password");
+		}
+	}
 }

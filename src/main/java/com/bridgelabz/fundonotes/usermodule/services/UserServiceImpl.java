@@ -63,8 +63,6 @@ public class UserServiceImpl implements UserService {
 		mail.setSubject("Account Activation Mail");
 		mail.setBody(activationLink + token);
 		producer.send(mail);
-//		System.out.println(consumer.receiveMail().toString());
-//		mailService.sendLink(consumer.receiveMail());
 	}
 
 	@Override
@@ -110,7 +108,6 @@ public class UserServiceImpl implements UserService {
 		mail.setSubject("Account Activation Mail");
 		mail.setBody(resetPasswordLink + token);
 		producer.send(mail);
-		mailService.sendLink(consumer.receiveMail());
 	}
 	
 	@Override

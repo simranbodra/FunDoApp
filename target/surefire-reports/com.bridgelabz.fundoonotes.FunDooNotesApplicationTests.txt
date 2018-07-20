@@ -1,0 +1,9 @@
+-------------------------------------------------------------------------------
+Test set: com.bridgelabz.fundoonotes.FunDooNotesApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.829 s <<< FAILURE! - in com.bridgelabz.fundoonotes.FunDooNotesApplicationTests
+contextLoads(com.bridgelabz.fundoonotes.FunDooNotesApplicationTests)  Time elapsed: 0.001 s  <<< ERROR!
+java.lang.IllegalStateException: Failed to load ApplicationContext
+Caused by: org.springframework.beans.factory.BeanDefinitionStoreException: Failed to parse configuration class [com.bridgelabz.fundoonotes.FunDooNotesApplication]; nested exception is org.springframework.context.annotation.ConflictingBeanDefinitionException: Annotation-specified bean name 'swaggerConfiguration' for bean class [com.bridgelabz.fundoonotes.user.configurations.SwaggerConfiguration] conflicts with existing, non-compatible bean definition of same name and class [com.bridgelabz.fundoonotes.note.configurations.SwaggerConfiguration]
+Caused by: org.springframework.context.annotation.ConflictingBeanDefinitionException: Annotation-specified bean name 'swaggerConfiguration' for bean class [com.bridgelabz.fundoonotes.user.configurations.SwaggerConfiguration] conflicts with existing, non-compatible bean definition of same name and class [com.bridgelabz.fundoonotes.note.configurations.SwaggerConfiguration]
+

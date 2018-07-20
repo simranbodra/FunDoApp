@@ -10,5 +10,5 @@ public interface NoteRepository extends MongoRepository<Note, String>{
 
 	public boolean findByUserId(String userId);
 	public List<Note> findAllByUserId(String userId);
-	public void deleteAll(List<String> userIdList);
+	//public void deleteAll(List<String> userIdList);
 }

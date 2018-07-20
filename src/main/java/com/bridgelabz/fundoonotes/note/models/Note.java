@@ -54,7 +54,7 @@ public class Note {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	
+
 	public String getColour() {
 		return colour;
 	}
@@ -62,7 +62,7 @@ public class Note {
 	public void setColour(String colour) {
 		this.colour = colour;
 	}
-	
+
 	public Date getCreatedAt() {
 		return createdAt;
 	}
@@ -86,13 +86,20 @@ public class Note {
 	public void setReminder(Date reminder) {
 		this.reminder = reminder;
 	}
-	
+
 	public boolean getTrash() {
 		return trash;
 	}
-	
+
 	public void setTrash(boolean trash) {
 		this.trash = trash;
+	}
+
+	@Override
+	public String toString() {
+		return "Note [noteId=" + noteId + ", userId=" + userId + ", title=" + title + ", description=" + description
+				+ ", colour=" + colour + ", createdAt=" + createdAt + ", lastUpdated=" + lastUpdated + ", reminder="
+				+ reminder + ", trash=" + trash + "]";
 	}
 
 }

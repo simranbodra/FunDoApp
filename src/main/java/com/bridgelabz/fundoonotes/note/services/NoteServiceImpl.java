@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,8 @@ public class NoteServiceImpl implements NoteService {
 
 	@Autowired
 	private NoteRepository repository;
+	
+	private ModelMapper modelMapper;
 
 	@Override
 	public ViewNote createNewNote(CreateNote newNote, String jwToken) throws NoteException {
@@ -49,6 +52,55 @@ public class NoteServiceImpl implements NoteService {
 
 		return viewNote;
 	}
+	
+	public ViewNote viewNote(String token, String noteId) throws NoteNotFoundException, UnauthorizedException {
+		String userId = NoteUtility.parseJWT(token);
+
+		Optional<Note> optionalNote = repository.findById(noteId);
+		
+		if (!optionalNote.isPresent()) {
+			throw new NoteNotFoundException("Note with respective id not found");
+		}
+		if (!optionalNote.get().getUserId().equals(userId)) {
+			throw new UnauthorizedException("User not authorised to access the note");
+		}
+		
+		Note note = optionalNote.get();
+		
+		ViewNote viewNote = new ViewNote();
+		viewNote.setTitle(note.getTitle());
+		viewNote.setDescription(note.getDescription());
+		viewNote.setCreatedAt(note.getCreatedAt());
+		viewNote.setLastUpdated(note.getLastUpdated());
+		viewNote.setReminder(note.getReminder());
+		
+		return viewNote;
+		
+	}
+	
+	public List<ViewNote> viewAllNote(String token) throws NoteNotFoundException{
+		String userId = NoteUtility.parseJWT(token);
+
+		if(!repository.findByUserId(userId)) {
+			throw new NoteNotFoundException("No notes found");
+		}
+		
+		List<Note> noteList = repository.findAllByUserId(userId);
+		
+		List<ViewNote> viewNoteList = new LinkedList<>();
+		for(int i=0; i<noteList.size(); i++) {
+			ViewNote viewNote = new ViewNote();
+			Note note = noteList.get(i);
+			viewNote.setTitle(note.getTitle());
+			viewNote.setDescription(note.getDescription());
+			viewNote.setCreatedAt(note.getCreatedAt());
+			viewNote.setLastUpdated(note.getLastUpdated());
+			viewNote.setReminder(note.getReminder());
+			viewNoteList.add(viewNote);
+		}
+		return viewNoteList;
+		
+	}
 
 	@Override
 	public void updateNote(UpdateNote updateNote, String token, String noteId)
@@ -56,11 +108,12 @@ public class NoteServiceImpl implements NoteService {
 		NoteUtility.validateNoteForUpdate(updateNote);
 
 		String userId = NoteUtility.parseJWT(token);
+		
+		Optional<Note> optionalNote = repository.findById(noteId);
 
-		if (!repository.existsById(noteId)) {
+		if (!optionalNote.isPresent()) {
 			throw new NoteNotFoundException("Note with respective id not found");
 		}
-		Optional<Note> optionalNote = repository.findById(noteId);
 		if (!optionalNote.get().getUserId().equals(userId)) {
 			throw new UnauthorizedException("User not authorised to access the note");
 		}
@@ -110,10 +163,14 @@ public class NoteServiceImpl implements NoteService {
 		if (!optionalNote.get().getUserId().equals(userId)) {
 			throw new UnauthorizedException("User not authorised to access the note");
 		}
+		if(optionalNote.get().getTrash() != true) {
+			throw new NoteNotFoundException("No such note found in trash");
+		}
+		
 		repository.deleteById(noteId);
 	}
 	
-	public void emptyNoteTrash(String token) throws NoteNotFoundException {
+	/*public void emptyNoteTrash(String token) throws NoteNotFoundException {
 		String userId = NoteUtility.parseJWT(token);
 	
 		if(!repository.findByUserId(userId)) {
@@ -127,7 +184,7 @@ public class NoteServiceImpl implements NoteService {
 			noteIdList.add(noteList.get(i).getNoteId());
 		}
 		repository.deleteAll(noteIdList);
-	}
+	}*/
 }
 
 

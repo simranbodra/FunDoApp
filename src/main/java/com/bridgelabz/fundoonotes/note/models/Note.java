@@ -1,6 +1,7 @@
 package com.bridgelabz.fundoonotes.note.models;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -18,6 +19,9 @@ public class Note {
 	private Date lastUpdated;
 	private Date reminder;
 	private boolean trash;
+	private boolean pin;
+	private boolean archive;
+	private List<ViewLabel> listOfLabel;
 
 	public Note() {
 		super();
@@ -94,12 +98,36 @@ public class Note {
 	public void setTrash(boolean trash) {
 		this.trash = trash;
 	}
+	
+	public boolean getPin() {
+		return pin;
+	}
+	
+	public void setPin(boolean pin) {
+		this.pin = pin;
+	}
+	
+	public boolean getArchive() {
+		return this.archive;
+	}
+	
+	public void setArchive(boolean archive) {
+		this.archive = archive;
+	}
+	
+	public List<ViewLabel> getListOfLabel(){
+		return this.listOfLabel;
+	}
+	
+	public void setListOfLabel(List<ViewLabel> listOfLabel) {
+		this.listOfLabel = listOfLabel;
+	}
 
 	@Override
 	public String toString() {
 		return "Note [noteId=" + noteId + ", userId=" + userId + ", title=" + title + ", description=" + description
 				+ ", colour=" + colour + ", createdAt=" + createdAt + ", lastUpdated=" + lastUpdated + ", reminder="
-				+ reminder + ", trash=" + trash + "]";
+				+ reminder + ", trash=" + trash + ", pin=" + pin + ", archive=" + archive + "]";
 	}
 
 }

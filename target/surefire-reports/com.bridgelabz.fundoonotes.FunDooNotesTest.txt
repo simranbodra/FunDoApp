@@ -1,7 +1,12 @@
 -------------------------------------------------------------------------------
 Test set: com.bridgelabz.fundoonotes.FunDooNotesTest
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.168 s <<< FAILURE! - in com.bridgelabz.fundoonotes.FunDooNotesTest
-initializationError(com.bridgelabz.fundoonotes.FunDooNotesTest)  Time elapsed: 0.003 s  <<< ERROR!
-java.lang.Exception: No runnable methods
+Tests run: 2, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 4.297 s <<< FAILURE! - in com.bridgelabz.fundoonotes.FunDooNotesTest
+registerTest(com.bridgelabz.fundoonotes.FunDooNotesTest)  Time elapsed: 0.234 s  <<< FAILURE!
+java.lang.AssertionError: JSON path "$.message" expected:<Registration Successful> but was:<Email already registered>
+	at com.bridgelabz.fundoonotes.FunDooNotesTest.registerTest(FunDooNotesTest.java:41)
+
+resetPasswordTest(com.bridgelabz.fundoonotes.FunDooNotesTest)  Time elapsed: 0.008 s  <<< FAILURE!
+java.lang.AssertionError: JSON path "$.message" expected:<Password reset successful> but was:<password should match with confirm password>
+	at com.bridgelabz.fundoonotes.FunDooNotesTest.resetPasswordTest(FunDooNotesTest.java:85)
 

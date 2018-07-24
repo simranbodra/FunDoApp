@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Implementation-Title: FunDoNotes
+Implementation-Title: FunDooNotes
 Implementation-Version: 0.0.1-SNAPSHOT
 Built-By: administrator
 Implementation-Vendor-Id: com.bridgelabz

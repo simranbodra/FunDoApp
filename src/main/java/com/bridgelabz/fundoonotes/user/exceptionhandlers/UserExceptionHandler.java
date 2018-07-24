@@ -9,13 +9,15 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.bridgelabz.fundoonotes.user.exceptions.LoginException;
 import com.bridgelabz.fundoonotes.user.exceptions.RegistrationException;
+import com.bridgelabz.fundoonotes.user.exceptions.UserNotActivatedException;
+import com.bridgelabz.fundoonotes.user.exceptions.UserNotFoundException;
 import com.bridgelabz.fundoonotes.user.models.Response;
 
 @ControllerAdvice
 public class UserExceptionHandler {
 
 	private final Logger logger = LoggerFactory.getLogger(UserExceptionHandler.class);
-	
+
 	@ExceptionHandler(RegistrationException.class)
 	public ResponseEntity<Response> handleRegistrationException(RegistrationException exception) {
 		logger.info("Error occured while registration " + exception.getMessage(), exception);
@@ -37,9 +39,31 @@ public class UserExceptionHandler {
 
 		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 	}
+
+	@ExceptionHandler(UserNotFoundException.class)
+	public ResponseEntity<Response> handleUserNotFoundException(UserNotFoundException exception) {
+		logger.info("Error occured while login " + exception.getMessage(), exception);
+
+		Response response = new Response();
+		response.setMessage(exception.getMessage());
+		response.setStatus(3);
+
+		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+	}
 	
+	@ExceptionHandler(UserNotActivatedException.class)
+	public ResponseEntity<Response> handleUserNotActivatedException(UserNotActivatedException exception) {
+		logger.info("Error occured while login " + exception.getMessage(), exception);
+
+		Response response = new Response();
+		response.setMessage(exception.getMessage());
+		response.setStatus(4);
+
+		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+	}
+
 	@ExceptionHandler(Exception.class)
-	public ResponseEntity<Response> handleException(Exception exception){
+	public ResponseEntity<Response> handleException(Exception exception) {
 		logger.error("Error occured for " + exception.getMessage(), exception);
 
 		Response response = new Response();
@@ -47,5 +71,5 @@ public class UserExceptionHandler {
 		response.setStatus(0);
 
 		return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-}
+	}
 }

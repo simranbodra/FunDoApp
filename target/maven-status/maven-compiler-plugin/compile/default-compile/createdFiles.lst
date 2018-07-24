@@ -2,7 +2,9 @@ com/bridgelabz/fundoonotes/user/exceptionhandlers/UserExceptionHandler.class
 com/bridgelabz/fundoonotes/user/services/MailServiceImpl.class
 com/bridgelabz/fundoonotes/user/services/UserServiceImpl.class
 com/bridgelabz/fundoonotes/user/models/Registration.class
+com/bridgelabz/fundoonotes/user/exceptions/UserNotFoundException.class
 com/bridgelabz/fundoonotes/note/models/ViewNote.class
+com/bridgelabz/fundoonotes/user/exceptions/UserNotActivatedException.class
 com/bridgelabz/fundoonotes/note/models/Note.class
 com/bridgelabz/fundoonotes/note/services/NoteServiceImpl.class
 com/bridgelabz/fundoonotes/user/configurations/SwaggerConfiguration.class
@@ -29,11 +31,14 @@ com/bridgelabz/fundoonotes/user/models/Response.class
 com/bridgelabz/fundoonotes/user/controller/UserController.class
 com/bridgelabz/fundoonotes/user/models/ResetPassword.class
 com/bridgelabz/fundoonotes/user/filters/LoggerInterceptor.class
+com/bridgelabz/fundoonotes/note/models/Reminder.class
 com/bridgelabz/fundoonotes/user/exceptions/RegistrationException.class
 com/bridgelabz/fundoonotes/user/services/UserService.class
 com/bridgelabz/fundoonotes/note/exceptions/NoteNotFoundException.class
 com/bridgelabz/fundoonotes/user/models/Login.class
+com/bridgelabz/fundoonotes/note/exceptions/ReminderException.class
 com/bridgelabz/fundoonotes/note/repositories/NoteRepository.class
 com/bridgelabz/fundoonotes/note/models/CreateNote.class
 com/bridgelabz/fundoonotes/user/exceptions/LoginException.class
 com/bridgelabz/fundoonotes/note/exceptions/NoteException.class
+com/bridgelabz/fundoonotes/note/interceptors/NoteInterceptor.class

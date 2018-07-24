@@ -1,0 +1,27 @@
+package com.bridgelabz.fundoonotes.note.models;
+
+public class ViewLabel {
+
+	private String labelId;
+	private String labelName;
+	
+	public ViewLabel() {
+		super();
+	}
+
+	public String getLabelId() {
+		return labelId;
+	}
+
+	public void setLabelId(String labelId) {
+		this.labelId = labelId;
+	}
+
+	public String getLabelName() {
+		return labelName;
+	}
+
+	public void setLabelName(String labelName) {
+		this.labelName = labelName;
+	}
+}

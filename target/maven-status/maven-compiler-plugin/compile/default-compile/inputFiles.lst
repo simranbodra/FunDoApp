@@ -1,5 +1,6 @@
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/note/exceptions/NoteNotFoundException.java
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/user/exceptions/RegistrationException.java
+/home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/user/exceptions/UserNotFoundException.java
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/user/exceptions/LoginException.java
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/user/models/Login.java
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/user/controller/UserController.java
@@ -16,8 +17,10 @@
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/user/configurations/RabbitMQConfiuration.java
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/note/models/ViewNote.java
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/user/exceptionhandlers/UserExceptionHandler.java
+/home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/note/models/Reminder.java
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/FunDooNotesApplication.java
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/user/rabbitmq/MailConsumerService.java
+/home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/note/interceptors/NoteInterceptor.java
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/note/exceptions/UnauthorizedException.java
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/user/services/MailService.java
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/note/controllers/NoteController.java
@@ -26,7 +29,9 @@
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/note/exceptions/NoteException.java
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/user/rabbitmq/MailConsumerServiceImpl.java
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/user/models/ResetPassword.java
+/home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/user/exceptions/UserNotActivatedException.java
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/user/models/User.java
+/home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/note/exceptions/ReminderException.java
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/user/services/UserServiceImpl.java
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/user/repositories/UserRepository.java
 /home/administrator/funDoNotes/FunDoNotes/src/main/java/com/bridgelabz/fundoonotes/note/models/CreateNote.java

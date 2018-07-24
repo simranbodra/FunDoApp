@@ -1,6 +1,7 @@
 package com.bridgelabz.fundoonotes.note.models;
 
 import java.util.Date;
+import java.util.List;
 
 public class ViewNote {
 
@@ -9,6 +10,9 @@ public class ViewNote {
 	private Date createdAt;
 	private Date lastUpdated;
 	private Date reminder;
+	private boolean pin;
+	private boolean archive;
+	private List<String> listOfLabel;
 
 	public ViewNote() {
 		super();
@@ -52,5 +56,29 @@ public class ViewNote {
 
 	public void setReminder(Date reminder) {
 		this.reminder = reminder;
+	}
+	
+	public boolean getPin() {
+		return this.pin;
+	}
+	
+	public void setPin(boolean pin) {
+		this.pin = pin;
+	}
+	
+	public boolean getArchive() {
+		return this.archive;
+	}
+	
+	public void setArchive(boolean archive) {
+		this.archive = archive;
+	}
+	
+	public List<String> getListOfLabel(){
+		return this.listOfLabel;
+	}
+	
+	public void setListOfLabel(List<String> listOfLabel) {
+		this.listOfLabel = listOfLabel;
 	}
 }

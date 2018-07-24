@@ -1,13 +1,10 @@
 package com.bridgelabz.fundoonotes.note.models;
 
-import java.util.Date;
-
 public class CreateNote {
 
 	private String title;
 	private String description;
 	private String colour = "white";
-	private Date reminder;
 
 	public CreateNote() {
 		super();
@@ -37,11 +34,4 @@ public class CreateNote {
 		this.colour = colour;
 	}
 	
-	public Date getReminder() {
-		return reminder;
-	}
-	
-	public void setReminder(Date reminder) {
-		this.reminder = reminder;
-	}
 }

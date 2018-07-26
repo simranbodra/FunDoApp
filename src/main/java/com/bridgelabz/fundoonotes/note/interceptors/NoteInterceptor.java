@@ -10,7 +10,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import com.bridgelabz.fundoonotes.note.utility.NoteUtility;
 import com.bridgelabz.fundoonotes.user.repositories.UserRepository;
 
-//@Component
+@Component
 public class NoteInterceptor implements HandlerInterceptor {
 
 	Logger log = org.slf4j.LoggerFactory.getLogger(this.getClass());
@@ -23,7 +23,6 @@ public class NoteInterceptor implements HandlerInterceptor {
 		log.info("Request URI : " + request.getRequestURI());
 		
 		String token = request.getHeader("token");
-		System.out.println("Interceptor : " + token);
 		
 		String userId = NoteUtility.parseJWT(token);
 		

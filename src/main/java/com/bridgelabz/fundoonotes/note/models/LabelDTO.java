@@ -1,11 +1,11 @@
 package com.bridgelabz.fundoonotes.note.models;
 
-public class ViewLabel {
+public class LabelDTO {
 
 	private String labelId;
 	private String labelName;
 	
-	public ViewLabel() {
+	public LabelDTO() {
 		super();
 	}
 

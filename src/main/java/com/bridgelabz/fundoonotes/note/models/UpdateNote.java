@@ -6,7 +6,7 @@ public class UpdateNote {
 
 	private String title;
 	private String description;
-	private Date reminder;
+	private String reminder;
 	private String colour;
 
 	public UpdateNote() {
@@ -29,11 +29,11 @@ public class UpdateNote {
 		this.description = description;
 	}
 
-	public Date getReminder() {
+	public String getReminder() {
 		return reminder;
 	}
 
-	public void setReminder(Date reminder) {
+	public void setReminder(String reminder) {
 		this.reminder = reminder;
 	}
 	

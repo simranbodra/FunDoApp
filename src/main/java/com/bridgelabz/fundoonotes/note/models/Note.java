@@ -17,11 +17,11 @@ public class Note {
 	private String colour;
 	private Date createdAt;
 	private Date lastUpdated;
-	private Date reminder;
+	private String reminder;
 	private boolean trash;
 	private boolean pin;
 	private boolean archive;
-	private List<ViewLabel> listOfLabel;
+	private List<LabelDTO> listOfLabel;
 
 	public Note() {
 		super();
@@ -83,11 +83,11 @@ public class Note {
 		this.lastUpdated = lastUpdated;
 	}
 
-	public Date getReminder() {
+	public String getReminder() {
 		return reminder;
 	}
 
-	public void setReminder(Date reminder) {
+	public void setReminder(String reminder) {
 		this.reminder = reminder;
 	}
 
@@ -115,11 +115,11 @@ public class Note {
 		this.archive = archive;
 	}
 	
-	public List<ViewLabel> getListOfLabel(){
+	public List<LabelDTO> getListOfLabel(){
 		return this.listOfLabel;
 	}
 	
-	public void setListOfLabel(List<ViewLabel> listOfLabel) {
+	public void setListOfLabel(List<LabelDTO> listOfLabel) {
 		this.listOfLabel = listOfLabel;
 	}
 

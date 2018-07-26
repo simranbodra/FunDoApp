@@ -1,11 +1,10 @@
 package com.bridgelabz.fundoonotes.note.services;
 
+import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,8 +19,8 @@ import com.bridgelabz.fundoonotes.note.models.CreateNote;
 import com.bridgelabz.fundoonotes.note.models.Label;
 import com.bridgelabz.fundoonotes.note.models.Note;
 import com.bridgelabz.fundoonotes.note.models.UpdateNote;
-import com.bridgelabz.fundoonotes.note.models.ViewLabel;
-import com.bridgelabz.fundoonotes.note.models.ViewNote;
+import com.bridgelabz.fundoonotes.note.models.LabelDTO;
+import com.bridgelabz.fundoonotes.note.models.NoteDTO;
 import com.bridgelabz.fundoonotes.note.repositories.LabelRepository;
 import com.bridgelabz.fundoonotes.note.repositories.NoteRepository;
 import com.bridgelabz.fundoonotes.note.utility.NoteUtility;
@@ -31,7 +30,7 @@ public class NoteServiceImpl implements NoteService {
 
 	@Autowired
 	private NoteRepository noteRepository;
-	
+
 	@Autowired
 	private LabelRepository labelRepository;
 
@@ -45,12 +44,13 @@ public class NoteServiceImpl implements NoteService {
 	 * @param jwToken
 	 * @return ViewNoteDTO
 	 * @throws NoteException
+	 * @throws ReminderException
+	 * @throws ParseException
 	 */
 	@Override
-	public ViewNote createNewNote(CreateNote newNote, String jwToken) throws NoteException {
+	public NoteDTO createNewNote(CreateNote newNote, String userId)
+			throws NoteException, ReminderException, ParseException {
 		NoteUtility.validateNewNote(newNote);
-
-		String userId = NoteUtility.parseJWT(jwToken);
 
 		Note note = new Note();
 		note.setTitle(newNote.getTitle());
@@ -58,28 +58,73 @@ public class NoteServiceImpl implements NoteService {
 		note.setCreatedAt(NoteUtility.getCurrentDate());
 		note.setLastUpdated(NoteUtility.getCurrentDate());
 		note.setUserId(userId);
-		if (newNote.getClass() == null || newNote.getColour().trim().length() == 0) {
-			note.setColour("White");
-		} else {
+
+		if (newNote.getColour() != null || newNote.getColour().trim().length() != 0) {
 			note.setColour(newNote.getColour());
 		}
+		if (newNote.getReminder() != null || newNote.getReminder().trim().length() != 0) {
+			NoteUtility.validateDate(newNote.getReminder());
+			note.setReminder(newNote.getReminder());
+		}
+
+		note.setPin(newNote.getPin());
+		note.setArchive(newNote.getArchive());
+
+		ArrayList<String> labelNameList = (ArrayList<String>) newNote.getListOfLabel();
+
+		List<Label> userLabels = labelRepository.findAllByUserId(userId);
+
+		ArrayList<String> userLabelList = new ArrayList<>();
+		for (int j = 0; j < userLabels.size(); j++) {
+			userLabelList.add(userLabels.get(j).getLabelName());
+		}
+		ArrayList<LabelDTO> toBeAddedLabels = new ArrayList<>();
+
+		for (int i = 0; i < labelNameList.size(); i++) {
+			if (labelNameList.get(i) != null || labelNameList.get(i).trim().length() != 0) {
+
+				if (!userLabelList.contains(labelNameList.get(i))) {
+					Label label = new Label();
+					label.setLabelName(labelNameList.get(i));
+					label.setUserId(userId);
+
+					labelRepository.save(label);
+
+					Optional<Label> optionalLabelAfterSave = labelRepository.findByLabelName(labelNameList.get(i));
+
+					LabelDTO viewLabelToSave = new LabelDTO();
+					viewLabelToSave.setLabelId(optionalLabelAfterSave.get().getLabelId());
+					viewLabelToSave.setLabelName(optionalLabelAfterSave.get().getLabelName());
+					toBeAddedLabels.add(viewLabelToSave);
+				} else {
+					Optional<Label> optionalLabelToSave = labelRepository.findByLabelName(labelNameList.get(i));
+					LabelDTO viewLabel = new LabelDTO();
+					viewLabel.setLabelName(optionalLabelToSave.get().getLabelName());
+					viewLabel.setLabelId(optionalLabelToSave.get().getLabelId());
+					toBeAddedLabels.add(viewLabel);
+				}
+
+			}
+		}
+
+		note.setListOfLabel(toBeAddedLabels);
+
 		noteRepository.save(note);
 
-		ViewNote viewNote = modelMapper.map(note, ViewNote.class);
-		return viewNote;
+		NoteDTO noteDto = modelMapper.map(note, NoteDTO.class);
+		return noteDto;
 	}
 
 	/**
 	 * view a note
 	 * 
-	 * @param token
+	 * @param userId
 	 * @param noteId
 	 * @return ViewNoteDTO
 	 * @throws NoteNotFoundException
 	 * @throws UnauthorizedException
 	 */
-	public ViewNote viewNote(String token, String noteId) throws NoteNotFoundException, UnauthorizedException {
-		String userId = NoteUtility.parseJWT(token);
+	public NoteDTO getNote(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException {
 
 		Optional<Note> optionalNote = noteRepository.findById(noteId);
 
@@ -92,40 +137,49 @@ public class NoteServiceImpl implements NoteService {
 
 		Note note = optionalNote.get();
 
-		ViewNote viewNote = new ViewNote();
-		viewNote.setTitle(note.getTitle());
-		viewNote.setDescription(note.getDescription());
-		viewNote.setCreatedAt(note.getCreatedAt());
-		viewNote.setLastUpdated(note.getLastUpdated());
-		viewNote.setReminder(note.getReminder());
+		NoteDTO noteDto = new NoteDTO();
+		noteDto.setNoteId(note.getNoteId());
+		noteDto.setTitle(note.getTitle());
+		noteDto.setDescription(note.getDescription());
+		noteDto.setCreatedAt(note.getCreatedAt());
+		noteDto.setLastUpdated(note.getLastUpdated());
+		noteDto.setReminder(note.getReminder());
+		noteDto.setArchive(note.getArchive());
+		noteDto.setPin(note.getPin());
+		noteDto.setListOfLabel(note.getListOfLabel());
 
-		return viewNote;
+		return noteDto;
 
 	}
 
 	/**
 	 * view a list of note owned by the user
 	 * 
-	 * @param token
+	 * @param userId
 	 * @return list of ViewNoteDTO
 	 * @throws NoteNotFoundException
 	 */
-	public List<ViewNote> viewAllNote(String token) throws NoteNotFoundException {
-		String userId = NoteUtility.parseJWT(token);
+	public List<NoteDTO> getAllNotes(String userId) throws NoteNotFoundException {
 
 		List<Note> noteList = noteRepository.findAllByUserId(userId);
 
-		List<ViewNote> viewNoteList = new LinkedList<>();
+		List<NoteDTO> viewNoteList = new LinkedList<>();
 		for (int i = 0; i < noteList.size(); i++) {
 			if (!noteList.get(i).getTrash()) {
-				ViewNote viewNote = new ViewNote();
+				NoteDTO noteDto = new NoteDTO();
 				Note note = noteList.get(i);
-				viewNote.setTitle(note.getTitle());
-				viewNote.setDescription(note.getDescription());
-				viewNote.setCreatedAt(note.getCreatedAt());
-				viewNote.setLastUpdated(note.getLastUpdated());
-				viewNote.setReminder(note.getReminder());
-				viewNoteList.add(viewNote);
+
+				noteDto.setNoteId(note.getNoteId());
+				noteDto.setTitle(note.getTitle());
+				noteDto.setDescription(note.getDescription());
+				noteDto.setCreatedAt(note.getCreatedAt());
+				noteDto.setLastUpdated(note.getLastUpdated());
+				noteDto.setReminder(note.getReminder());
+				noteDto.setArchive(note.getArchive());
+				noteDto.setPin(note.getPin());
+				noteDto.setListOfLabel(note.getListOfLabel());
+
+				viewNoteList.add(noteDto);
 			}
 		}
 		return viewNoteList;
@@ -142,12 +196,11 @@ public class NoteServiceImpl implements NoteService {
 	 * @throws NoteNotFoundException
 	 * @throws UnauthorizedException
 	 * @throws ReminderException
+	 * @throws ParseException
 	 */
 	@Override
 	public void updateNote(UpdateNote updateNote, String userId, String noteId)
-			throws NoteException, NoteNotFoundException, UnauthorizedException, ReminderException {
-
-		// String userId = NoteUtility.parseJWT(token);
+			throws NoteException, NoteNotFoundException, UnauthorizedException, ReminderException, ParseException {
 
 		Optional<Note> optionalNote = noteRepository.findById(noteId);
 
@@ -180,14 +233,13 @@ public class NoteServiceImpl implements NoteService {
 	/**
 	 * move a note to trash
 	 * 
-	 * @param token
+	 * @param userId
 	 * @param noteId
 	 * @throws NoteNotFoundException
 	 * @throws UnauthorizedException
 	 */
 	@Override
-	public void deleteNote(String token, String noteId) throws NoteNotFoundException, UnauthorizedException {
-		String userId = NoteUtility.parseJWT(token);
+	public void deleteNote(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException {
 
 		if (!noteRepository.existsById(noteId)) {
 			throw new NoteNotFoundException("Note with respective id not found");
@@ -206,15 +258,14 @@ public class NoteServiceImpl implements NoteService {
 	/**
 	 * delete a note from trash
 	 * 
-	 * @param token
+	 * @param userId
 	 * @param noteId
 	 * @throws NoteNotFoundException
 	 * @throws UnauthorizedException
 	 */
 	@Override
-	public void permanentNoteDelete(String token, String noteId, boolean delete)
+	public void permanentNoteDelete(String userId, String noteId, boolean delete)
 			throws NoteNotFoundException, UnauthorizedException {
-		String userId = NoteUtility.parseJWT(token);
 
 		if (!noteRepository.existsById(noteId)) {
 			throw new NoteNotFoundException("Note with respective id not found");
@@ -240,11 +291,10 @@ public class NoteServiceImpl implements NoteService {
 	/**
 	 * delete all notes in trash
 	 * 
-	 * @param token
+	 * @param userId
 	 */
 	@Override
-	public void emptyTrash(String token) {
-		String userId = NoteUtility.parseJWT(token);
+	public void emptyTrash(String userId) {
 
 		List<Note> noteList = noteRepository.findAllByUserId(userId);
 
@@ -258,17 +308,17 @@ public class NoteServiceImpl implements NoteService {
 	/**
 	 * to add reminder to the note
 	 * 
-	 * @param token
+	 * @param userId
 	 * @param noteId
 	 * @param reminderDate
 	 * @throws NoteNotFoundException
 	 * @throws UnauthorizedException
 	 * @throws ReminderException
+	 * @throws ParseException
 	 */
 	@Override
-	public void addNoteReminder(String token, String noteId, Date reminderDate)
-			throws NoteNotFoundException, UnauthorizedException, ReminderException {
-		String userId = NoteUtility.parseJWT(token);
+	public void addNoteReminder(String userId, String noteId, String reminderDate)
+			throws NoteNotFoundException, UnauthorizedException, ReminderException, ParseException {
 
 		if (!noteRepository.existsById(noteId)) {
 			throw new NoteNotFoundException("Note with respective id not found");
@@ -290,14 +340,13 @@ public class NoteServiceImpl implements NoteService {
 	/**
 	 * to remove reminder from the note
 	 * 
-	 * @param token
+	 * @param userId
 	 * @param noteId
 	 * @throws NoteNotFoundException
 	 * @throws UnauthorizedException
 	 */
 	@Override
-	public void removeReminder(String token, String noteId) throws NoteNotFoundException, UnauthorizedException {
-		String userId = NoteUtility.parseJWT(token);
+	public void removeReminder(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException {
 
 		if (!noteRepository.existsById(noteId)) {
 			throw new NoteNotFoundException("Note with respective id not found");
@@ -316,15 +365,14 @@ public class NoteServiceImpl implements NoteService {
 	/**
 	 * Add pin to the note
 	 * 
-	 * @param token
+	 * @param userId
 	 * @param noteId
 	 * @throws NoteNotFoundException
 	 * @throws UnauthorizedException
 	 * 
 	 */
 	@Override
-	public void addPinToNote(String token, String noteId) throws NoteNotFoundException, UnauthorizedException {
-		String userId = NoteUtility.parseJWT(token);
+	public void addPinToNote(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException {
 
 		if (!noteRepository.existsById(noteId)) {
 			throw new NoteNotFoundException("Note with respective id not found");
@@ -343,15 +391,14 @@ public class NoteServiceImpl implements NoteService {
 	/**
 	 * Removes pin on the note
 	 * 
-	 * @param token
+	 * @param userId
 	 * @param noteId
 	 * @throws NoteNotFoundException
 	 * @throws UnauthorizedException
 	 * 
 	 */
 	@Override
-	public void removePinOnNote(String token, String noteId) throws NoteNotFoundException, UnauthorizedException {
-		String userId = NoteUtility.parseJWT(token);
+	public void removePinOnNote(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException {
 
 		if (!noteRepository.existsById(noteId)) {
 			throw new NoteNotFoundException("Note with respective id not found");
@@ -370,15 +417,14 @@ public class NoteServiceImpl implements NoteService {
 	/**
 	 * Adding note to archive
 	 * 
-	 * @param token
+	 * @param userId
 	 * @param noteId
 	 * @throws NoteNotFoundException
 	 * @throws UnauthorizedException
 	 * 
 	 */
 	@Override
-	public void archiveNote(String token, String noteId) throws NoteNotFoundException, UnauthorizedException {
-		String userId = NoteUtility.parseJWT(token);
+	public void archiveNote(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException {
 
 		if (!noteRepository.existsById(noteId)) {
 			throw new NoteNotFoundException("Note with respective id not found");
@@ -397,14 +443,13 @@ public class NoteServiceImpl implements NoteService {
 	/**
 	 * remove note from archive
 	 * 
-	 * @param token
+	 * @param userId
 	 * @param noteId
 	 * @throws NoteNotFoundException
 	 * @throws UnauthorizedException
 	 */
 	@Override
-	public void removeArchiveNote(String token, String noteId) throws NoteNotFoundException, UnauthorizedException {
-		String userId = NoteUtility.parseJWT(token);
+	public void removeArchiveNote(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException {
 
 		if (!noteRepository.existsById(noteId)) {
 			throw new NoteNotFoundException("Note with respective id not found");
@@ -423,20 +468,19 @@ public class NoteServiceImpl implements NoteService {
 	/**
 	 * View archived notes
 	 * 
-	 * @param token
+	 * @param userId
 	 * @return list of archived notes
 	 * 
 	 */
 	@Override
-	public List<ViewNote> viewArchivedNote(String token) {
-		String userId = NoteUtility.parseJWT(token);
+	public List<NoteDTO> viewArchivedNote(String userId) {
 
 		List<Note> noteList = noteRepository.findAllByUserId(userId);
 
-		List<ViewNote> viewArchiveNoteList = new LinkedList<>();
+		List<NoteDTO> viewArchiveNoteList = new LinkedList<>();
 		for (int i = 0; i < noteList.size(); i++) {
 			if (!noteList.get(i).getTrash() && noteList.get(i).getArchive()) {
-				ViewNote viewNote = new ViewNote();
+				NoteDTO viewNote = new NoteDTO();
 				Note note = noteList.get(i);
 				viewNote.setTitle(note.getTitle());
 				viewNote.setDescription(note.getDescription());
@@ -448,48 +492,49 @@ public class NoteServiceImpl implements NoteService {
 		}
 		return viewArchiveNoteList;
 	}
-	
+
 	/**
 	 * To create a new Label
-	 * @param token
+	 * 
+	 * @param userId
 	 * @param lableName
 	 * @throws LabelException
 	 */
 	@Override
-	public void createNewLabel(String token, String labelName) throws LabelException {
-		if(labelName == null || labelName.trim().length() == 0) {
+	public void createNewLabel(String userId, String labelName) throws LabelException {
+		if (labelName == null || labelName.trim().length() == 0) {
 			throw new LabelException("Invalid LabelName");
 		}
-		String userId = NoteUtility.parseJWT(token);
-		
+
 		Optional<Label> optionalLabel = labelRepository.findByLabelName(labelName);
-		if(optionalLabel.isPresent() && optionalLabel.get().getUserId().equals(userId)) {
+		if (optionalLabel.isPresent() && optionalLabel.get().getUserId().equals(userId)) {
 			throw new LabelException("Label with this name already exists");
 		}
-		
+
 		Label label = new Label();
 		label.setLabelName(labelName);
 		label.setUserId(userId);
-		
+
 		labelRepository.save(label);
 	}
-	
+
 	/**
 	 * add label to the note
-	 * @param token
+	 * 
+	 * @param userId
 	 * @param noteId
 	 * @return list of note
-	 * @throws NoteNotFoundException 
+	 * @throws NoteNotFoundException
 	 * @throws LabelNotFoundException
 	 * @throws UnauthorizedException
-	 * @throws LabelException 
+	 * @throws LabelException
 	 */
 	@Override
-	public void addLabelToNote(String token, String noteId,String labelName) throws NoteNotFoundException, UnauthorizedException, LabelException {
-		if(labelName == null || labelName.trim().length() == 0) {
+	public void addLabelToNote(String userId, String noteId, String labelName)
+			throws NoteNotFoundException, UnauthorizedException, LabelException {
+		if (labelName == null || labelName.trim().length() == 0) {
 			throw new LabelException("Invalid LabelName");
 		}
-		String userId = NoteUtility.parseJWT(token);
 
 		if (!noteRepository.existsById(noteId)) {
 			throw new NoteNotFoundException("Note with respective id not found");
@@ -498,51 +543,146 @@ public class NoteServiceImpl implements NoteService {
 		if (!optionalNote.get().getUserId().equals(userId)) {
 			throw new UnauthorizedException("User not authorised to access the note");
 		}
-		
+
 		List<Label> listOfLabel = labelRepository.findAllByUserId(userId);
-		
-		for(int i=0; i<listOfLabel.size(); i++) {
-			if(listOfLabel.get(i).getLabelName().equalsIgnoreCase(labelName)) {
+
+		for (int i = 0; i < listOfLabel.size(); i++) {
+			if (listOfLabel.get(i).getLabelName().equalsIgnoreCase(labelName)) {
 				throw new LabelException("Label with this name already exists");
 			}
 		}
-		
+
 		Note note = optionalNote.get();
-		ArrayList<ViewLabel>  listOfNoteLabel = (ArrayList<ViewLabel>) note.getListOfLabel();
+		ArrayList<LabelDTO> listOfNoteLabel = (ArrayList<LabelDTO>) note.getListOfLabel();
 		Label label = new Label();
 		label.setLabelName(labelName);
 		label.setUserId(userId);
 		labelRepository.save(label);
-		ViewLabel viewLabel = modelMapper.map(label, ViewLabel.class);
+		LabelDTO viewLabel = modelMapper.map(label, LabelDTO.class);
 		listOfNoteLabel.add(viewLabel);
 		note.setListOfLabel(listOfNoteLabel);
-		
+
 		noteRepository.save(note);
 	}
-	
+
+	/**
+	 * To update the label name
+	 * 
+	 * @param userId
+	 * @param labelId
+	 * @param labelName
+	 * @throws LabelNotFoundException
+	 * @throws UnauthorizedException
+	 */
 	@Override
-	public void updateLabel(String token, String labelId, String labelName) throws UnauthorizedException, LabelNotFoundException {
-		String userId = NoteUtility.parseJWT(token);
-		
+	public void updateLabel(String userId, String labelId, String labelName)
+			throws UnauthorizedException, LabelNotFoundException {
+
 		Optional<Label> optionalLabel = labelRepository.findById(labelId);
-		
-		if(!optionalLabel.isPresent()) {
+
+		if (!optionalLabel.isPresent()) {
 			throw new LabelNotFoundException("No such label found");
 		}
-		if(!optionalLabel.get().getUserId().equals(userId)) {
+		if (!optionalLabel.get().getUserId().equals(userId)) {
 			throw new UnauthorizedException("User not authorized to access the label");
 		}
-		
+
 		Label label = optionalLabel.get();
 		label.setLabelName(labelName);
-		
+
 		labelRepository.save(label);
-		
+
 		ArrayList<Note> noteListByUserId = (ArrayList<Note>) noteRepository.findAllByUserId(userId);
-		
-		for(int i=0; i<noteListByUserId.size(); i++) {
+
+		for (int i = 0; i < noteListByUserId.size(); i++) {
 			Note note = noteListByUserId.get(i);
-			
+			for (int j = 0; j < note.getListOfLabel().size(); j++) {
+				if (note.getListOfLabel().get(j).getLabelId().equals(labelId)) {
+					note.getListOfLabel().get(j).setLabelName(labelName);
+					noteRepository.save(note);
+				}
+			}
 		}
+	}
+
+	/**
+	 * To delete label
+	 * 
+	 * @param userId
+	 * @param labelId
+	 * @throws UnauthorizedException
+	 * @throws LabelNotFoundException
+	 */
+	@Override
+	public void deleteLabel(String userId, String labelId) throws UnauthorizedException, LabelNotFoundException {
+		Optional<Label> optionalLabel = labelRepository.findById(labelId);
+
+		if (!optionalLabel.isPresent()) {
+			throw new LabelNotFoundException("No such label found");
+		}
+		if (!optionalLabel.get().getUserId().equals(userId)) {
+			throw new UnauthorizedException("User not authorized to access the label");
+		}
+
+		// Label label = optionalLabel.get();
+
+		labelRepository.deleteById(labelId);
+
+		ArrayList<Note> noteListByUserId = (ArrayList<Note>) noteRepository.findAllByUserId(userId);
+
+		for (int i = 0; i < noteListByUserId.size(); i++) {
+			Note note = noteListByUserId.get(i);
+			for (int j = 0; j < note.getListOfLabel().size(); j++) {
+				if (note.getListOfLabel().get(j).getLabelId().equals(labelId)) {
+					note.getListOfLabel().remove(i);
+					noteRepository.save(note);
+				}
+			}
+		}
+	}
+
+	/**
+	 * To get all notes by label Id
+	 * 
+	 * @param userId
+	 * @param labelId
+	 * @return list of note
+	 * @throws LabelNotFoundException
+	 */
+	@Override
+	public List<NoteDTO> getLabel(String userId, String labelId) throws LabelNotFoundException {
+		Optional<Label> optionalLabel = labelRepository.findById(labelId);
+
+		if (!optionalLabel.isPresent()) {
+			throw new LabelNotFoundException("No such label found");
+		}
+
+		ArrayList<Note> noteListByUserId = (ArrayList<Note>) noteRepository.findAllByUserId(userId);
+
+		List<NoteDTO> noteList = new ArrayList<>();
+
+		for (int i = 0; i < noteListByUserId.size(); i++) {
+			Note note = noteListByUserId.get(i);
+			if (!noteListByUserId.get(i).getTrash()) {
+				for (int j = 0; j < note.getListOfLabel().size(); j++) {
+					if (note.getListOfLabel().get(j).getLabelId().equals(labelId)) {
+
+						NoteDTO noteDto = new NoteDTO();
+						noteDto.setNoteId(note.getNoteId());
+						noteDto.setTitle(note.getTitle());
+						noteDto.setDescription(note.getDescription());
+						noteDto.setCreatedAt(note.getCreatedAt());
+						noteDto.setLastUpdated(note.getLastUpdated());
+						noteDto.setReminder(note.getReminder());
+						noteDto.setArchive(note.getArchive());
+						noteDto.setPin(note.getPin());
+						noteDto.setListOfLabel(note.getListOfLabel());
+
+						noteList.add(noteDto);
+					}
+				}
+			}
+		}
+		return noteList;
 	}
 }

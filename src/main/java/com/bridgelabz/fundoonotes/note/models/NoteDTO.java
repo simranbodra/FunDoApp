@@ -3,21 +3,29 @@ package com.bridgelabz.fundoonotes.note.models;
 import java.util.Date;
 import java.util.List;
 
-public class ViewNote {
+public class NoteDTO {
 
+	private String noteId;
 	private String title;
 	private String description;
 	private Date createdAt;
 	private Date lastUpdated;
-	private Date reminder;
+	private String reminder;
 	private boolean pin;
 	private boolean archive;
-	private List<String> listOfLabel;
+	private List<LabelDTO> listOfLabel;
 
-	public ViewNote() {
+	public NoteDTO() {
 		super();
 	}
 
+	public String getNoteId() {
+		return noteId;
+	}
+	
+	public void setNoteId(String noteId) {
+		this.noteId = noteId;
+	}
 	public String getTitle() {
 		return title;
 	}
@@ -50,11 +58,11 @@ public class ViewNote {
 		this.lastUpdated = lastUpdated;
 	}
 
-	public Date getReminder() {
+	public String getReminder() {
 		return reminder;
 	}
 
-	public void setReminder(Date reminder) {
+	public void setReminder(String reminder) {
 		this.reminder = reminder;
 	}
 	
@@ -74,11 +82,11 @@ public class ViewNote {
 		this.archive = archive;
 	}
 	
-	public List<String> getListOfLabel(){
+	public List<LabelDTO> getListOfLabel(){
 		return this.listOfLabel;
 	}
 	
-	public void setListOfLabel(List<String> listOfLabel) {
+	public void setListOfLabel(List<LabelDTO> listOfLabel) {
 		this.listOfLabel = listOfLabel;
 	}
 }

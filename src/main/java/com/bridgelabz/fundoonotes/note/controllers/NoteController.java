@@ -22,6 +22,7 @@ import com.bridgelabz.fundoonotes.note.exceptions.NoteNotFoundException;
 import com.bridgelabz.fundoonotes.note.exceptions.ReminderException;
 import com.bridgelabz.fundoonotes.note.exceptions.UnauthorizedException;
 import com.bridgelabz.fundoonotes.note.models.CreateNote;
+import com.bridgelabz.fundoonotes.note.models.LabelDTO;
 import com.bridgelabz.fundoonotes.note.models.UpdateNote;
 import com.bridgelabz.fundoonotes.note.models.NoteDTO;
 import com.bridgelabz.fundoonotes.note.services.NoteService;
@@ -165,9 +166,10 @@ public class NoteController {
 	 * to empty the trash notes
 	 * @param request
 	 * @return ResponseDTO
+	 * @throws NoteNotFoundException 
 	 */
 	@RequestMapping(value = "/emptyTrash", method = RequestMethod.DELETE)
-	public ResponseEntity<Response> emptyTrash(HttpServletRequest request){
+	public ResponseEntity<Response> emptyTrash(HttpServletRequest request) throws NoteNotFoundException{
 		String userId = (String) request.getAttribute("token");
 
 		noteService.emptyTrash(userId);
@@ -176,6 +178,21 @@ public class NoteController {
 		response.setMessage("Trash is emptied");
 		response.setStatus(94);
 		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+	
+	/**
+	 * To view trash notes
+	 * @param request
+	 * @return list of trash notes
+	 * @throws NoteNotFoundException 
+	 */
+	@RequestMapping(value = "/getTrash", method = RequestMethod.GET)
+	public ResponseEntity<List<NoteDTO>> getTrash(HttpServletRequest request) throws NoteNotFoundException{
+		String userId = (String) request.getAttribute("token");
+		
+		List<NoteDTO> trashList = noteService.getTrash(userId);
+		
+		return new ResponseEntity<>(trashList, HttpStatus.OK);
 	}
 	
 	/**
@@ -305,9 +322,10 @@ public class NoteController {
 	 * View archived notes
 	 * @param request
 	 * @return ResponseDTO
+	 * @throws NoteNotFoundException 
 	 */
 	@RequestMapping(value = "/viewArchiveNotes", method = RequestMethod.POST)
-	public ResponseEntity<List<NoteDTO>> viewArchiveNotes(HttpServletRequest request){
+	public ResponseEntity<List<NoteDTO>> viewArchiveNotes(HttpServletRequest request) throws NoteNotFoundException{
 		String userId = (String) request.getAttribute("token");
 
 		List<NoteDTO> archivedNoteList = noteService.viewArchivedNote(userId);
@@ -334,6 +352,22 @@ public class NoteController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
+	/***
+	 * To get all labels
+	 * @param request
+	 * @param labelId
+	 * @return list of LabelDTO
+	 * @throws LabelNotFoundException 
+	 */
+	@RequestMapping(value = "/getLabels", method = RequestMethod.POST)
+	public ResponseEntity<List<LabelDTO>> getAllLabel(HttpServletRequest request) throws LabelNotFoundException{
+		String userId = (String) request.getAttribute("token");
+		
+		List<LabelDTO> labelList = noteService.getAllLabel(userId);
+		
+		return new ResponseEntity<>(labelList, HttpStatus.OK);
+	}
+	
 	/**
 	 * Add label to the note
 	 * @param request
@@ -343,9 +377,10 @@ public class NoteController {
 	 * @throws NoteNotFoundException
 	 * @throws UnauthorizedException
 	 * @throws LabelException
+	 * @throws LabelNotFoundException 
 	 */
 	@RequestMapping(value = "/addLabelToNote/{noteId}", method = RequestMethod.PUT)
-	public ResponseEntity<Response> addLabel(HttpServletRequest request, @PathVariable String noteId, @RequestParam String labelName) throws NoteNotFoundException, UnauthorizedException, LabelException{
+	public ResponseEntity<Response> addLabel(HttpServletRequest request, @PathVariable String noteId, @RequestParam String labelName) throws NoteNotFoundException, UnauthorizedException, LabelException, LabelNotFoundException{
 		String userId = (String) request.getAttribute("token");
 
 		noteService.addLabelToNote(userId, noteId, labelName);
@@ -393,6 +428,28 @@ public class NoteController {
 		Response response = new Response();
 		response.setMessage("Label deleted");
 		response.setStatus(202);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+	
+	/**
+	 * To delete label from a note
+	 * @param request
+	 * @param noteId
+	 * @param labelId
+	 * @return ResponseDTO
+	 * @throws NoteNotFoundException
+	 * @throws UnauthorizedException
+	 * @throws LabelNotFoundException
+	 */
+	@RequestMapping(value = "/deleteLabelFromNote/{noteId}", method = RequestMethod.DELETE)
+	public ResponseEntity<Response> deteleLabelFromNote(HttpServletRequest request, @PathVariable String noteId, @RequestParam String labelId) throws NoteNotFoundException, UnauthorizedException, LabelNotFoundException{
+		String userId = (String) request.getAttribute("token");
+		
+		noteService.deleteLabelFromNote(userId, noteId, labelId);
+		
+		Response response = new Response();
+		response.setMessage("Label deleted from note");
+		response.setStatus(203);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	

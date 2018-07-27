@@ -81,7 +81,7 @@ public class NoteServiceImpl implements NoteService {
 		ArrayList<LabelDTO> toBeAddedLabels = new ArrayList<>();
 
 		for (int i = 0; i < labelNameList.size(); i++) {
-			if (labelNameList.get(i) != null || labelNameList.get(i).trim().length() != 0) {
+			if (labelNameList.get(i) != null || labelNameList.get(i).trim().equals("")) {
 
 				if (!userLabelList.contains(labelNameList.get(i))) {
 					Label label = new Label();
@@ -90,18 +90,29 @@ public class NoteServiceImpl implements NoteService {
 
 					labelRepository.save(label);
 
-					Optional<Label> optionalLabelAfterSave = labelRepository.findByLabelName(labelNameList.get(i));
+					List<Label> optionalLabelAfterSave = labelRepository.findAllByLabelName(labelNameList.get(i));
 
-					LabelDTO viewLabelToSave = new LabelDTO();
-					viewLabelToSave.setLabelId(optionalLabelAfterSave.get().getLabelId());
-					viewLabelToSave.setLabelName(optionalLabelAfterSave.get().getLabelName());
-					toBeAddedLabels.add(viewLabelToSave);
+					for (int k = 0; k < optionalLabelAfterSave.size(); k++) {
+						if (optionalLabelAfterSave.get(k).getUserId().equalsIgnoreCase(userId)) {
+							LabelDTO viewLabelToSave = new LabelDTO();
+							viewLabelToSave.setLabelId(optionalLabelAfterSave.get(k).getLabelId());
+							viewLabelToSave.setLabelName(optionalLabelAfterSave.get(k).getLabelName());
+							toBeAddedLabels.add(viewLabelToSave);
+						}
+					}
+
 				} else {
-					Optional<Label> optionalLabelToSave = labelRepository.findByLabelName(labelNameList.get(i));
-					LabelDTO viewLabel = new LabelDTO();
-					viewLabel.setLabelName(optionalLabelToSave.get().getLabelName());
-					viewLabel.setLabelId(optionalLabelToSave.get().getLabelId());
-					toBeAddedLabels.add(viewLabel);
+					List<Label> optionalLabelToSave = labelRepository.findAllByLabelName(labelNameList.get(i));
+
+					for (int j = 0; j < optionalLabelToSave.size(); j++) {
+						if (optionalLabelToSave.get(j).getUserId().equalsIgnoreCase(userId)) {
+							LabelDTO viewLabel = new LabelDTO();
+							viewLabel.setLabelName(optionalLabelToSave.get(j).getLabelName());
+							viewLabel.setLabelId(optionalLabelToSave.get(j).getLabelId());
+							toBeAddedLabels.add(viewLabel);
+						}
+					}
+
 				}
 
 			}
@@ -154,7 +165,6 @@ public class NoteServiceImpl implements NoteService {
 
 	/**
 	 * view a list of note owned by the user
-	 * 
 	 * @param userId
 	 * @return list of ViewNoteDTO
 	 * @throws NoteNotFoundException
@@ -162,12 +172,35 @@ public class NoteServiceImpl implements NoteService {
 	public List<NoteDTO> getAllNotes(String userId) throws NoteNotFoundException {
 
 		List<Note> noteList = noteRepository.findAllByUserId(userId);
+		
+		if(noteList.isEmpty()) {
+			throw new NoteNotFoundException("No Note Found");
+		}
 
 		List<NoteDTO> viewNoteList = new LinkedList<>();
 		for (int i = 0; i < noteList.size(); i++) {
-			if (!noteList.get(i).getTrash()) {
+			if (!noteList.get(i).getTrash() && noteList.get(i).getPin()) {
 				NoteDTO noteDto = new NoteDTO();
 				Note note = noteList.get(i);
+
+				noteDto.setNoteId(note.getNoteId());
+				noteDto.setTitle(note.getTitle());
+				noteDto.setDescription(note.getDescription());
+				noteDto.setCreatedAt(note.getCreatedAt());
+				noteDto.setLastUpdated(note.getLastUpdated());
+				noteDto.setReminder(note.getReminder());
+				noteDto.setArchive(note.getArchive());
+				noteDto.setPin(note.getPin());
+				noteDto.setListOfLabel(note.getListOfLabel());
+
+				viewNoteList.add(noteDto);
+			}
+		}
+
+		for (int j = 0; j < noteList.size(); j++) {
+			if (!noteList.get(j).getTrash() && !noteList.get(j).getPin()) {
+				NoteDTO noteDto = new NoteDTO();
+				Note note = noteList.get(j);
 
 				noteDto.setNoteId(note.getNoteId());
 				noteDto.setTitle(note.getTitle());
@@ -188,7 +221,6 @@ public class NoteServiceImpl implements NoteService {
 
 	/**
 	 * update a note
-	 * 
 	 * @param updateNoteDTO
 	 * @param userId
 	 * @param noteId
@@ -290,19 +322,60 @@ public class NoteServiceImpl implements NoteService {
 
 	/**
 	 * delete all notes in trash
-	 * 
 	 * @param userId
+	 * @throws NoteNotFoundException 
 	 */
 	@Override
-	public void emptyTrash(String userId) {
+	public void emptyTrash(String userId) throws NoteNotFoundException {
 
 		List<Note> noteList = noteRepository.findAllByUserId(userId);
+		
+		if(noteList.isEmpty()) {
+			throw new NoteNotFoundException("No Note Found");
+		}
 
 		for (int i = 0; i < noteList.size(); i++) {
 			Note note = noteList.get(i);
 			if (noteList.get(i).getTrash())
 				noteRepository.deleteById(note.getNoteId());
 		}
+	}
+
+	/**
+	 * To view all trashed notes
+	 * @param userId
+	 * @return list of notes
+	 * @throws NoteNotFoundException 
+	 * 
+	 */
+	@Override
+	public List<NoteDTO> getTrash(String userId) throws NoteNotFoundException {
+		List<Note> noteList = noteRepository.findAllByUserId(userId);
+		
+		if(noteList.isEmpty()) {
+			throw new NoteNotFoundException("No note found");
+		}
+
+		List<NoteDTO> viewNoteList = new LinkedList<>();
+		for (int i = 0; i < noteList.size(); i++) {
+			if (noteList.get(i).getTrash()) {
+				NoteDTO noteDto = new NoteDTO();
+				Note note = noteList.get(i);
+
+				noteDto.setNoteId(note.getNoteId());
+				noteDto.setTitle(note.getTitle());
+				noteDto.setDescription(note.getDescription());
+				noteDto.setCreatedAt(note.getCreatedAt());
+				noteDto.setLastUpdated(note.getLastUpdated());
+				noteDto.setReminder(note.getReminder());
+				noteDto.setArchive(note.getArchive());
+				noteDto.setPin(note.getPin());
+				noteDto.setListOfLabel(note.getListOfLabel());
+
+				viewNoteList.add(noteDto);
+			}
+		}
+		return viewNoteList;
 	}
 
 	/**
@@ -470,12 +543,17 @@ public class NoteServiceImpl implements NoteService {
 	 * 
 	 * @param userId
 	 * @return list of archived notes
+	 * @throws NoteNotFoundException 
 	 * 
 	 */
 	@Override
-	public List<NoteDTO> viewArchivedNote(String userId) {
+	public List<NoteDTO> viewArchivedNote(String userId) throws NoteNotFoundException {
 
 		List<Note> noteList = noteRepository.findAllByUserId(userId);
+		
+		if(noteList.isEmpty()) {
+			throw new NoteNotFoundException("No note found");
+		}
 
 		List<NoteDTO> viewArchiveNoteList = new LinkedList<>();
 		for (int i = 0; i < noteList.size(); i++) {
@@ -519,6 +597,32 @@ public class NoteServiceImpl implements NoteService {
 	}
 
 	/**
+	 * To get all the labels created
+	 * 
+	 * @param userId
+	 * @param labelId
+	 * @return list of labelDTO
+	 * @throws LabelNotFoundException 
+	 */
+	@Override
+	public List<LabelDTO> getAllLabel(String userId) throws LabelNotFoundException {
+		List<Label> listOfLabel = labelRepository.findAllByUserId(userId);
+		
+		if(listOfLabel.isEmpty()) {
+			throw new LabelNotFoundException("No Labels found");
+		}
+
+		List<LabelDTO> viewLabelList = new ArrayList<>();
+		for (int i = 0; i < listOfLabel.size(); i++) {
+			LabelDTO labelDto = new LabelDTO();
+			labelDto.setLabelId(listOfLabel.get(i).getLabelId());
+			labelDto.setLabelName(listOfLabel.get(i).getLabelName());
+			viewLabelList.add(labelDto);
+		}
+		return viewLabelList;
+	}
+
+	/**
 	 * add label to the note
 	 * 
 	 * @param userId
@@ -531,7 +635,7 @@ public class NoteServiceImpl implements NoteService {
 	 */
 	@Override
 	public void addLabelToNote(String userId, String noteId, String labelName)
-			throws NoteNotFoundException, UnauthorizedException, LabelException {
+			throws NoteNotFoundException, UnauthorizedException, LabelException, LabelNotFoundException {
 		if (labelName == null || labelName.trim().length() == 0) {
 			throw new LabelException("Invalid LabelName");
 		}
@@ -546,22 +650,38 @@ public class NoteServiceImpl implements NoteService {
 
 		List<Label> listOfLabel = labelRepository.findAllByUserId(userId);
 
-		for (int i = 0; i < listOfLabel.size(); i++) {
-			if (listOfLabel.get(i).getLabelName().equalsIgnoreCase(labelName)) {
-				throw new LabelException("Label with this name already exists");
-			}
+		if (listOfLabel.isEmpty()) {
+			throw new LabelNotFoundException("No label found");
 		}
 
 		Note note = optionalNote.get();
 		ArrayList<LabelDTO> listOfNoteLabel = (ArrayList<LabelDTO>) note.getListOfLabel();
-		Label label = new Label();
-		label.setLabelName(labelName);
-		label.setUserId(userId);
-		labelRepository.save(label);
-		LabelDTO viewLabel = modelMapper.map(label, LabelDTO.class);
-		listOfNoteLabel.add(viewLabel);
-		note.setListOfLabel(listOfNoteLabel);
 
+		List<String> labelNames = new ArrayList<>();
+		for (int j = 0; j < listOfLabel.size(); j++) {
+			labelNames.add(listOfLabel.get(j).getLabelName());
+		}
+
+		if (!labelNames.contains(labelName)) {
+			Label label = new Label();
+			label.setLabelName(labelName);
+			label.setUserId(userId);
+			labelRepository.save(label);
+			LabelDTO viewLabel = modelMapper.map(label, LabelDTO.class);
+			listOfNoteLabel.add(viewLabel);
+		} else {
+			List<String> noteLabelNames = new ArrayList<>();
+			for (int i = 0; i < note.getListOfLabel().size(); i++) {
+				noteLabelNames.add(note.getListOfLabel().get(i).getLabelName());
+			}
+			if (!noteLabelNames.contains(labelName)) {
+				Label label = labelRepository.findByLabelName(labelName).get();
+				LabelDTO viewLabel = modelMapper.map(label, LabelDTO.class);
+				listOfNoteLabel.add(viewLabel);
+			}
+		}
+
+		note.setListOfLabel(listOfNoteLabel);
 		noteRepository.save(note);
 	}
 
@@ -624,8 +744,6 @@ public class NoteServiceImpl implements NoteService {
 			throw new UnauthorizedException("User not authorized to access the label");
 		}
 
-		// Label label = optionalLabel.get();
-
 		labelRepository.deleteById(labelId);
 
 		ArrayList<Note> noteListByUserId = (ArrayList<Note>) noteRepository.findAllByUserId(userId);
@@ -639,6 +757,49 @@ public class NoteServiceImpl implements NoteService {
 				}
 			}
 		}
+	}
+
+	/**
+	 * to delete a label from the note
+	 * 
+	 * @param userId
+	 * @param noteId
+	 * @param labelId
+	 * @throws NoteNotFoundException
+	 * @throws UnauthorizedException
+	 * @throws LabelNotFoundException
+	 */
+	@Override
+	public void deleteLabelFromNote(String userId, String noteId, String labelId)
+			throws NoteNotFoundException, UnauthorizedException, LabelNotFoundException {
+		Optional<Note> optionalNote = noteRepository.findById(noteId);
+
+		if (!optionalNote.isPresent()) {
+			throw new NoteNotFoundException("Note with respective id not found");
+		}
+		if (!optionalNote.get().getUserId().equals(userId)) {
+			throw new UnauthorizedException("User not authorised to access the note");
+		}
+
+		Optional<Label> optionalLabel = labelRepository.findById(labelId);
+
+		if (!optionalLabel.isPresent()) {
+			throw new LabelNotFoundException("No such label found");
+		}
+
+		Note note = optionalNote.get();
+
+		if (!note.getTrash()) {
+			ArrayList<LabelDTO> labelList = (ArrayList<LabelDTO>) note.getListOfLabel();
+			for (int i = 0; i < labelList.size(); i++) {
+				if (labelList.get(i).getLabelId().equals(labelId)) {
+					labelList.remove(i);
+				}
+			}
+			note.setListOfLabel(labelList);
+		}
+
+		noteRepository.save(note);
 	}
 
 	/**

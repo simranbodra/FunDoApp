@@ -64,17 +64,6 @@ public class FunDooNotesTest {
 	}
 
 	// @Test
-	/*
-	 * public void resetPasswordTest() throws Exception {
-	 * mockMvc.perform(MockMvcRequestBuilders.put("/resetPassword").contentType(
-	 * MediaType.APPLICATION_JSON).header( "token",
-	 * "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1YjUxODRkZTgzMzQ2YzM2NjBiZTY0MWYiLCJpYXQiOjE1MzIyMjE0ODAsInN1YiI6IjViNTE4NGRlODMzNDZjMzY2MGJlNjQxZiJ9.zXU77YE94edlk3XNIzvSfLmhtHqnvhIlj3dIf6-3Wdc")
-	 * .content("{ \"password\" :\"Simran@8\",\"confirmpassword\":\"Simran@8\"}"))
-	 * .andExpect(jsonPath("$.message").value("Password reset successful"))
-	 * .andExpect(jsonPath("$.status").value(32)); }
-	 */
-
-	// @Test
 	public void resetPasswordTest() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.put("/resetPassword").contentType(MediaType.APPLICATION_JSON).header(
 				"token",
@@ -93,9 +82,6 @@ public class FunDooNotesTest {
 						"{ \"title\" :\"Title Hello\",\"description\":\"Something\",\"colour\":\"Red\",\"reminder\":\"2018-07-25T04:56:14.154Z\"}"))
 				.andExpect(jsonPath("$.title").value("Title Hello"))
 				.andExpect(jsonPath("$.description").value("Something"));
-		// .andExpect(jsonPath("$.createdAt").value("2018-07-23T04:47:57.438Z"))
-		// .andExpect(jsonPath("$.lastUpdated").value("2018-07-23T04:47:57.438Z"))
-		// .andExpect(jsonPath("$.reminder").value(""));
 	}
 
 	// @Test
@@ -108,7 +94,7 @@ public class FunDooNotesTest {
 
 	}
 
-	//@Test
+	// @Test
 	public void deleteNoteTest() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.put("/note/delete/{noteId}", "5b53276c83346c234525d65d")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -119,8 +105,8 @@ public class FunDooNotesTest {
 				.andExpect(jsonPath("$.status").value(92));
 	}
 
-	/*@Test
-	public void permanentDeleteNoteTest() throws Exception {
+	//@Test
+	/*public void permanentDeleteNoteTest() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.delete("/note/permanentDelete/{noteId}"), "5b53276c83346c234525d65d")
 				.contentType(MediaType.APPLICATION_JSON)
 				.header("token",

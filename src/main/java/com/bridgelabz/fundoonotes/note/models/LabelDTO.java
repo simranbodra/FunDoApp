@@ -4,7 +4,7 @@ public class LabelDTO {
 
 	private String labelId;
 	private String labelName;
-	
+
 	public LabelDTO() {
 		super();
 	}

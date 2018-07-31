@@ -26,10 +26,12 @@ public interface NoteService {
 	 * @throws ReminderException
 	 * @throws ParseException
 	 */
-	public NoteDTO createNewNote(CreateNote newNote, String userId) throws NoteException, ReminderException, ParseException;
+	public NoteDTO createNote(CreateNote newNote, String userId)
+			throws NoteException, ReminderException, ParseException;
 
 	/**
 	 * To update a note
+	 * 
 	 * @param updateNote
 	 * @param userId
 	 * @param noteId
@@ -39,10 +41,12 @@ public interface NoteService {
 	 * @throws ReminderException
 	 * @throws ParseException
 	 */
-	public void updateNote(UpdateNote updateNote, String userId, String noteId) throws NoteException, NoteNotFoundException, UnauthorizedException, ReminderException, ParseException;
+	public void updateNote(UpdateNote updateNote, String userId, String noteId)
+			throws NoteException, NoteNotFoundException, UnauthorizedException, ReminderException, ParseException;
 
 	/**
 	 * Move note to trash
+	 * 
 	 * @param userId
 	 * @param noteId
 	 * @throws NoteNotFoundException
@@ -52,16 +56,19 @@ public interface NoteService {
 
 	/**
 	 * To remove note from trash
+	 * 
 	 * @param userId
 	 * @param noteId
 	 * @param restore
 	 * @throws NoteNotFoundException
 	 * @throws UnauthorizedException
 	 */
-	public void permanentNoteDelete(String userId, String noteId, boolean restore) throws NoteNotFoundException, UnauthorizedException;
+	public void permanentNoteDelete(String userId, String noteId, boolean restore)
+			throws NoteNotFoundException, UnauthorizedException;
 
 	/**
 	 * To get a note
+	 * 
 	 * @param userId
 	 * @param noteId
 	 * @return NoteDTO
@@ -72,6 +79,7 @@ public interface NoteService {
 
 	/**
 	 * To get list of notes
+	 * 
 	 * @param userId
 	 * @return list of NoteDTO
 	 * @throws NoteNotFoundException
@@ -80,13 +88,15 @@ public interface NoteService {
 
 	/**
 	 * To empty trash
+	 * 
 	 * @param userId
 	 * @throws NoteNotFoundException
 	 */
 	public void emptyTrash(String userId) throws NoteNotFoundException;
-	
+
 	/**
 	 * To get trash notes
+	 * 
 	 * @param userId
 	 * @return list of NoteDTO
 	 * @throws NoteNotFoundException
@@ -94,7 +104,21 @@ public interface NoteService {
 	public List<NoteDTO> getTrash(String userId) throws NoteNotFoundException;
 
 	/**
+	 * To set color on the note
+	 * 
+	 * @param userId
+	 * @param noteId
+	 * @param colour
+	 * @throws NoteNotFoundException
+	 * @throws UnauthorizedException
+	 * @throws NoteException
+	 */
+	public void addColour(String userId, String noteId, String colour)
+			throws NoteNotFoundException, UnauthorizedException, NoteException;
+
+	/**
 	 * To add reminder to note
+	 * 
 	 * @param userId
 	 * @param noteId
 	 * @param reminderDate
@@ -103,10 +127,12 @@ public interface NoteService {
 	 * @throws ReminderException
 	 * @throws ParseException
 	 */
-	public void addNoteReminder(String userId, String noteId, String reminderDate) throws NoteNotFoundException, UnauthorizedException, ReminderException, ParseException;
+	public void addNoteReminder(String userId, String noteId, String reminderDate)
+			throws NoteNotFoundException, UnauthorizedException, ReminderException, ParseException;
 
 	/**
 	 * To remove reminder from note
+	 * 
 	 * @param userId
 	 * @param noteId
 	 * @throws NoteNotFoundException
@@ -116,6 +142,7 @@ public interface NoteService {
 
 	/**
 	 * To pin a note
+	 * 
 	 * @param userId
 	 * @param noteId
 	 * @throws NoteNotFoundException
@@ -125,6 +152,7 @@ public interface NoteService {
 
 	/**
 	 * To remove pin on note
+	 * 
 	 * @param userId
 	 * @param noteId
 	 * @throws NoteNotFoundException
@@ -134,6 +162,7 @@ public interface NoteService {
 
 	/**
 	 * To archive a note
+	 * 
 	 * @param userId
 	 * @param noteId
 	 * @throws NoteNotFoundException
@@ -143,6 +172,7 @@ public interface NoteService {
 
 	/**
 	 * TO remove note from archive
+	 * 
 	 * @param userId
 	 * @param noteId
 	 * @throws NoteNotFoundException
@@ -151,7 +181,8 @@ public interface NoteService {
 	public void removeArchiveNote(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException;
 
 	/**
-	 * To get archive notes 
+	 * To get archive notes
+	 * 
 	 * @param userId
 	 * @return list of NoteDTO
 	 * @throws NoteNotFoundException
@@ -160,14 +191,17 @@ public interface NoteService {
 
 	/**
 	 * To create a label
+	 * 
 	 * @param userId
 	 * @param labelName
+	 * @return LabelDTO
 	 * @throws LabelException
 	 */
-	public void createNewLabel(String userId, String labelName) throws LabelException;
-	
+	public LabelDTO createNewLabel(String userId, String labelName) throws LabelException;
+
 	/**
 	 * To get list of label
+	 * 
 	 * @param userId
 	 * @return list of LabelDTO
 	 * @throws LabelNotFoundException
@@ -176,6 +210,7 @@ public interface NoteService {
 
 	/**
 	 * To add a label to note
+	 * 
 	 * @param userId
 	 * @param noteId
 	 * @param labelName
@@ -184,29 +219,34 @@ public interface NoteService {
 	 * @throws LabelException
 	 * @throws LabelNotFoundException
 	 */
-	public void addLabelToNote(String userId, String noteId, String labelName) throws NoteNotFoundException, UnauthorizedException, LabelException, LabelNotFoundException;
+	public void addLabelToNote(String userId, String noteId, String labelName)
+			throws NoteNotFoundException, UnauthorizedException, LabelException, LabelNotFoundException;
 
 	/**
 	 * TO update a label
+	 * 
 	 * @param userId
 	 * @param labelId
 	 * @param labelName
 	 * @throws UnauthorizedException
 	 * @throws LabelNotFoundException
 	 */
-	public void updateLabel(String userId, String labelId, String labelName) throws UnauthorizedException, LabelNotFoundException;
+	public void updateLabel(String userId, String labelId, String labelName)
+			throws UnauthorizedException, LabelNotFoundException;
 
 	/**
 	 * To delete a label
+	 * 
 	 * @param userId
 	 * @param labelId
 	 * @throws UnauthorizedException
 	 * @throws LabelNotFoundException
 	 */
 	public void deleteLabel(String userId, String labelId) throws UnauthorizedException, LabelNotFoundException;
-	
+
 	/**
 	 * To delete a label from a note
+	 * 
 	 * @param userId
 	 * @param noteId
 	 * @param labelId
@@ -214,16 +254,17 @@ public interface NoteService {
 	 * @throws UnauthorizedException
 	 * @throws LabelNotFoundException
 	 */
-	public void deleteLabelFromNote(String userId, String noteId, String labelId) throws NoteNotFoundException, UnauthorizedException, LabelNotFoundException;
+	public void deleteLabelFromNote(String userId, String noteId, String labelId)
+			throws NoteNotFoundException, UnauthorizedException, LabelNotFoundException;
 
 	/**
 	 * To get notes of a label
+	 * 
 	 * @param userId
 	 * @param labelId
 	 * @return
 	 * @throws LabelNotFoundException
 	 */
 	public List<NoteDTO> getLabel(String userId, String labelId) throws LabelNotFoundException;
-
 
 }

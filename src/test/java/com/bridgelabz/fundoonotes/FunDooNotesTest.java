@@ -7,11 +7,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -31,12 +34,12 @@ public class FunDooNotesTest {
 
 	}
 
-	// @Test
+	//@Test
 	public void registerTest() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.post("/register").contentType(MediaType.APPLICATION_JSON).content(
 				"{\"emailId\" : \"simranbodra@gmail.com\", \"password\" : \"Simran@222\",\"confirmPassword\":\"Simran@222\",\"userName\":\"Simran Bodra\",\"phoneNumber\":\"7751886716\" }")
-				.accept(MediaType.APPLICATION_JSON)).andExpect(jsonPath("$.message").value("Registration Successful"))
-				.andExpect(jsonPath("$.status").value(10));
+				.accept(MediaType.APPLICATION_JSON)).andExpect(jsonPath("$.message").value("Email already registered"))
+				.andExpect(jsonPath("$.status").value(1));
 	}
 
 	// @Test
@@ -51,7 +54,7 @@ public class FunDooNotesTest {
 	public void activateTest() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get("/activateaccount").header("token",
 				"eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1YjUxODRkZTgzMzQ2YzM2NjBiZTY0MWYiLCJpYXQiOjE1MzIyMjE0ODAsInN1YiI6IjViNTE4NGRlODMzNDZjMzY2MGJlNjQxZiJ9.zXU77YE94edlk3XNIzvSfLmhtHqnvhIlj3dIf6-3Wdc")
-				.accept(MediaType.TEXT_PLAIN_VALUE))
+				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(jsonPath("$.message").value("Account activated successfully"))
 				.andExpect(jsonPath("$.status").value(12));
 	}
@@ -59,7 +62,7 @@ public class FunDooNotesTest {
 	// @Test
 	public void forgetPasswordTest() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.get("/resetPasswordLink").param("email", "simranbodra6@gmail.com")
-				.content(MediaType.TEXT_PLAIN_VALUE)).andExpect(jsonPath("$.message").value("Successfully sent mail"))
+				.contentType(MediaType.APPLICATION_JSON)).andExpect(jsonPath("$.message").value("Successfully sent mail"))
 				.andExpect(jsonPath("$.status").value(31));
 	}
 
@@ -72,6 +75,11 @@ public class FunDooNotesTest {
 				.andExpect(jsonPath("$.message").value("Password reset successful"))
 				.andExpect(jsonPath("$.status").value(32));
 	}
+	
+	
+	//****************************************Note Test************************************************
+	
+	
 
 	// @Test
 	public void createNewNoteTest() throws Exception {
@@ -84,6 +92,23 @@ public class FunDooNotesTest {
 				.andExpect(jsonPath("$.description").value("Something"));
 	}
 
+
+	//@Test
+    public void getNoteTest() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/getNote/{noteId}","5b5b19e083346c225a957f08").requestAttr("token",
+                "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1YjUxODRkZTgzMzQ2YzM2NjBiZTY0MWYiLCJpYXQiOjE1MzI4MjQ0NDQsInN1YiI6IjViNTE4NGRlODMzNDZjMzY2MGJlNjQxZiJ9.uGYqdK7J-toXE7eCw3Py9ByEHQzTaYngitNZ0UHGxfU")
+                );
+           
+            } 
+   
+    //@Test
+    public void getAllNotesTest() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/getAllNotes").requestAttr("token",
+                "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1YjUxODRkZTgzMzQ2YzM2NjBiZTY0MWYiLCJpYXQiOjE1MzI4MjQ0NDQsInN1YiI6IjViNTE4NGRlODMzNDZjMzY2MGJlNjQxZiJ9.uGYqdK7J-toXE7eCw3Py9ByEHQzTaYngitNZ0UHGxfU")
+                );
+               
+    }
+    
 	// @Test
 	public void updateNoteTest() throws Exception {
 		mockMvc.perform(MockMvcRequestBuilders.put("/note/update/{noteId}", "5b53276c83346c234525d65d")
@@ -100,18 +125,72 @@ public class FunDooNotesTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.header("token",
 						"eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1YjUxODRkZTgzMzQ2YzM2NjBiZTY0MWYiLCJpYXQiOjE1MzIzOTU3NDUsInN1YiI6IjViNTE4NGRlODMzNDZjMzY2MGJlNjQxZiJ9._HPw5aCnfzaqT3O2Fu-cYJaT5sFKWOVPctmtcnIY5C4")
-				.accept(MediaType.TEXT_PLAIN_VALUE))
+				.accept(MediaType.APPLICATION_JSON))
 				.andExpect(jsonPath("$.message").value("Note Successfully moved to trash"))
 				.andExpect(jsonPath("$.status").value(92));
 	}
 
-	//@Test
-	/*public void permanentDeleteNoteTest() throws Exception {
-		mockMvc.perform(MockMvcRequestBuilders.delete("/note/permanentDelete/{noteId}"), "5b53276c83346c234525d65d")
+	// @Test
+	public void permanentDeleteNoteTest() throws Exception {
+		((ResultActions) ((MockHttpServletRequestBuilder) mockMvc.perform(MockMvcRequestBuilders
+				.delete("/note/permanentDelete/{noteId}"))).contentType(MediaType.APPLICATION_JSON).header("token",
+						"eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1YjUxODRkZTgzMzQ2YzM2NjBiZTY0MWYiLCJpYXQiOjE1MzIzOTU3NDUsInN1YiI6IjViNTE4NGRlODMzNDZjMzY2MGJlNjQxZiJ9._HPw5aCnfzaqT3O2Fu-cYJaT5sFKWOVPctmtcnIY5C4")
+						.accept(MediaType.TEXT_PLAIN))
+								.andExpect(jsonPath("$.message").value("Note Successfully moved to trash"))
+								.andExpect(jsonPath("$.status").value(92));
+	}
+
+	// @Test
+	public void emptyTrash() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.delete("/emptyTrash").contentType(MediaType.APPLICATION_JSON).header(
+				"token",
+				"eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1YjUxODRkZTgzMzQ2YzM2NjBiZTY0MWYiLCJpYXQiOjE1MzIzOTU3NDUsInN1YiI6IjViNTE4NGRlODMzNDZjMzY2MGJlNjQxZiJ9._HPw5aCnfzaqT3O2Fu-cYJaT5sFKWOVPctmtcnIY5C4")
+				.accept(MediaType.TEXT_PLAIN_VALUE)).andExpect(jsonPath("$.message").value("Trash is emptied"))
+				.andExpect(jsonPath("$.status").value(94));
+	}
+
+	// get trash
+
+	// @Test
+	public void addReminder() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.put("/addReminder/{noteId}", "5b5b19e083346c225a957f08")
 				.contentType(MediaType.APPLICATION_JSON)
 				.header("token",
 						"eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1YjUxODRkZTgzMzQ2YzM2NjBiZTY0MWYiLCJpYXQiOjE1MzIzOTU3NDUsInN1YiI6IjViNTE4NGRlODMzNDZjMzY2MGJlNjQxZiJ9._HPw5aCnfzaqT3O2Fu-cYJaT5sFKWOVPctmtcnIY5C4")
-				.accept(MediaType.TEXT_PLAIN).andExpect(jsonPath("$.message").value("Note Successfully moved to trash"))
-				.andExpect(jsonPath("$.status").value(92));
-	}*/
+				.accept(MediaType.TEXT_PLAIN_VALUE))
+				.andExpect(jsonPath("$.message").value("Reminder added to the note"))
+				.andExpect(jsonPath("$.status").value(80));
+	}
+
+	// @Test
+	public void removeReminder() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.put("/removeReminder/{noteId}", "5b5b19e083346c225a957f08")
+				.contentType(MediaType.APPLICATION_JSON)
+				.header("token",
+						"eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1YjUxODRkZTgzMzQ2YzM2NjBiZTY0MWYiLCJpYXQiOjE1MzIzOTU3NDUsInN1YiI6IjViNTE4NGRlODMzNDZjMzY2MGJlNjQxZiJ9._HPw5aCnfzaqT3O2Fu-cYJaT5sFKWOVPctmtcnIY5C4")
+				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.message").value("Removed reminder on the note"))
+				.andExpect(jsonPath("$.status").value(81));
+	}
+
+	// @Test
+	public void addPin() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.put("/addPin/{noteId}", "5b5b19e083346c225a957f08")
+				.contentType(MediaType.APPLICATION_JSON)
+				.header("token",
+						"eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1YjUxODRkZTgzMzQ2YzM2NjBiZTY0MWYiLCJpYXQiOjE1MzIzOTU3NDUsInN1YiI6IjViNTE4NGRlODMzNDZjMzY2MGJlNjQxZiJ9._HPw5aCnfzaqT3O2Fu-cYJaT5sFKWOVPctmtcnIY5C4")
+				.accept(MediaType.TEXT_PLAIN_VALUE)).andExpect(jsonPath("$.message").value("Pinned the note"))
+				.andExpect(jsonPath("$.status").value(70));
+	}
+
+	//@Test
+	public void removePin() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.put("/removePin/{noteId}", "5b5b19e083346c225a957f08")
+				.contentType(MediaType.TEXT_PLAIN_VALUE)
+				.requestAttr("token",
+						"eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1YjUxODRkZTgzMzQ2YzM2NjBiZTY0MWYiLCJpYXQiOjE1MzIzOTU3NDUsInN1YiI6IjViNTE4NGRlODMzNDZjMzY2MGJlNjQxZiJ9._HPw5aCnfzaqT3O2Fu-cYJaT5sFKWOVPctmtcnIY5C4")
+				.accept(MediaType.TEXT_PLAIN_VALUE)).andExpect(jsonPath("$.message").value("Pin removed on the note"))
+				.andExpect(jsonPath("$.status").value(71));
+	}
+	
 }

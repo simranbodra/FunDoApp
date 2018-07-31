@@ -3,11 +3,10 @@ package com.bridgelabz.fundoonotes.note.repositories;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.mongodb.repository.MongoRepository;
-
+import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import com.bridgelabz.fundoonotes.note.models.Label;
 
-public interface LabelRepository extends MongoRepository<Label, String> {
+public interface LabelElasticsearchRepository extends ElasticsearchRepository<Label, String> {
 
 	public Optional<Label> findByLabelName(String labelName);
 

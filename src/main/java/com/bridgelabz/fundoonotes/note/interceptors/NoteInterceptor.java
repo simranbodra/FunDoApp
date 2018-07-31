@@ -22,12 +22,12 @@ public class NoteInterceptor implements HandlerInterceptor {
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object object) throws Exception {
 		log.info("Request URI : " + request.getRequestURI());
 		
-		String token = request.getHeader("token");
+		String token = request.getHeader("Authorization");
 		
 		String userId = NoteUtility.parseJWT(token);
 		
 		if (userRepository.findById(userId).isPresent()) {
-			request.setAttribute("token", userId);
+			request.setAttribute("UserId", userId);
 			return true;
 		}
 		return false;

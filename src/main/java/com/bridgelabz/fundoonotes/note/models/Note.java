@@ -4,9 +4,11 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.elasticsearch.annotations.Document;
+//import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document
+//@Document
+@Document(indexName = "notesindex", type = "note")
 public class Note {
 
 	@Id
@@ -27,13 +29,19 @@ public class Note {
 		super();
 	}
 
+	
+
 	public String getNoteId() {
 		return noteId;
 	}
 
+
+
 	public void setNoteId(String noteId) {
 		this.noteId = noteId;
 	}
+
+
 
 	public String getUserId() {
 		return userId;

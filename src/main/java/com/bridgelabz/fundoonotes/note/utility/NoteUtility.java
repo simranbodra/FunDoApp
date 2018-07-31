@@ -55,10 +55,8 @@ public class NoteUtility {
 	}
 	
 	public static boolean validateDate(String date) throws ReminderException, ParseException {
-		System.out.println(date);
 		Date reminder = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").parse(date);
-		System.err.println(reminder);
-		System.out.println(reminder);
+		
 		if(reminder.before(getCurrentDate())) {
 			throw new ReminderException("Date and time should be current date and time or after");
 		}

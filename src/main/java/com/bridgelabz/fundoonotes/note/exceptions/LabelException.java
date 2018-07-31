@@ -8,3 +8,4 @@ public class LabelException extends Exception {
 		super(message);
 	}
 }
+

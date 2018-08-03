@@ -3,11 +3,14 @@ package com.bridgelabz.fundoonotes.user.utility;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.DatatypeConverter;
+
+import org.springframework.beans.factory.annotation.Value;
 
 import com.bridgelabz.fundoonotes.user.exceptions.LoginException;
 import com.bridgelabz.fundoonotes.user.exceptions.RegistrationException;
@@ -33,32 +36,6 @@ public class UserUtility {
 
 	private UserUtility() {
 
-	}
-
-	/**
-	 * 
-	 * @param userId
-	 * @return
-	 */
-	public static String tokenGenerator(String userId) {
-		String key = "simran";
-
-		long nowMillis = System.currentTimeMillis() + (20 * 60 * 60 * 1000);
-		Date now = new Date(nowMillis);
-
-		JwtBuilder builder = Jwts.builder().setId(userId).setIssuedAt(now).setSubject(userId)
-				.signWith(SignatureAlgorithm.HS256, key);
-
-		return builder.compact();
-	}
-
-	public static String parseJWT(String jwt) {
-		String key = "simran";
-
-		Claims claims = Jwts.parser().setSigningKey(DatatypeConverter.parseBase64Binary(key)).parseClaimsJws(jwt)
-				.getBody();
-
-		return claims.getId();
 	}
 
 	public static boolean validateEmail(String email) {
@@ -145,5 +122,10 @@ public class UserUtility {
 				|| (!resetPassword.getPassword().equals(resetPassword.getConfirmPassword()))) {
 			throw new LoginException("password should match with confirm password");
 		}
+	}
+	
+	public static String generateUUID() {
+		UUID randomString = UUID.randomUUID();
+		return randomString.toString();
 	}
 }

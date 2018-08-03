@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.bridgelabz.fundoonotes.note.exceptions.InvalidLabelNameException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelNotFoundException;
 import com.bridgelabz.fundoonotes.note.exceptions.NoteException;
@@ -80,6 +81,17 @@ public class NoteExceptionHandler {
 		Response response = new Response();
 		response.setMessage(exception.getMessage());
 		response.setStatus(95);
+
+		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+	}
+	
+	@ExceptionHandler(InvalidLabelNameException.class)
+	public ResponseEntity<Response> handleInvalidLabelNameException(InvalidLabelNameException exception) {
+		logger.info("Error while validating label name " + exception.getMessage(), exception);
+
+		Response response = new Response();
+		response.setMessage(exception.getMessage());
+		response.setStatus(96);
 
 		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 	}

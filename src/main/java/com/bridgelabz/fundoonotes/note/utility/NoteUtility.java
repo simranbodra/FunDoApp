@@ -4,13 +4,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.xml.bind.DatatypeConverter;
-
 import com.bridgelabz.fundoonotes.note.exceptions.NoteException;
 import com.bridgelabz.fundoonotes.note.exceptions.ReminderException;
 import com.bridgelabz.fundoonotes.note.models.CreateNote;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 
 public class NoteUtility {
 
@@ -27,21 +23,6 @@ public class NoteUtility {
 						&& (note.getColour() == null || note.getColour().trim().length() == 0)) {
 			throw new NoteException("Title ,Description and Colour cannot be empty");
 		}
-	}
-
-	/**
-	 * to parse the JWToken
-	 * 
-	 * @param jwtoken
-	 * @return String containing userId
-	 */
-	public static String parseJWT(String jwtoken) {
-		String key = "simran";
-
-		Claims claims = Jwts.parser().setSigningKey(DatatypeConverter.parseBase64Binary(key)).parseClaimsJws(jwtoken)
-				.getBody();
-
-		return claims.getId();
 	}
 
 	/**

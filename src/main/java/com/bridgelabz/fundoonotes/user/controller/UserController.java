@@ -29,6 +29,13 @@ public class UserController {
 	@Autowired
 	UserService userService;
 
+	/**
+	 * TO register a user
+	 * @param registration
+	 * @return ResponseDTO
+	 * @throws RegistrationException
+	 * @throws MessagingException
+	 */
 	@RequestMapping(value = "/register", method = RequestMethod.POST)
 	public ResponseEntity<Response> register(@RequestBody Registration registration)
 			throws RegistrationException, MessagingException {
@@ -41,12 +48,23 @@ public class UserController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
+	/**
+	 * For User login
+	 * @param login
+	 * @param resp
+	 * @return ResponseDTO 
+	 * @throws LoginException
+	 * @throws UserNotFoundException
+	 * @throws UserNotActivatedException
+	 */
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	public ResponseEntity<Response> login(@RequestBody Login login, HttpServletResponse resp)
 			throws LoginException, UserNotFoundException, UserNotActivatedException {
 
 		String token = userService.login(login);
+		
 		resp.setHeader("token", token);
+		
 		Response response = new Response();
 		response.setMessage("Login Successful");
 		response.setStatus(20);
@@ -54,6 +72,12 @@ public class UserController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	/**
+	 * To activate account after registration
+	 * @param token
+	 * @return ResponseDTO
+	 * @throws LoginException
+	 */
 	@RequestMapping(value = "/activateaccount", method = RequestMethod.GET)
 	public ResponseEntity<Response> activateaccount(@RequestHeader("token") String token) throws LoginException {
 
@@ -66,8 +90,15 @@ public class UserController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	/**
+	 * To send reset password link 
+	 * @param email
+	 * @return ResponseDTO
+	 * @throws MessagingException
+	 * @throws UserNotFoundException
+	 */
 	@RequestMapping(value = "/resetPasswordLink", method = RequestMethod.GET)
-	public ResponseEntity<Response> resetPasswordLink(@RequestParam("email") String email) throws MessagingException {
+	public ResponseEntity<Response> resetPasswordLink(@RequestParam("email") String email) throws MessagingException, UserNotFoundException {
 
 		userService.sendPasswordLink(email);
 
@@ -78,6 +109,14 @@ public class UserController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	/**
+	 * To reset password for the user
+	 * @param token
+	 * @param resetPassword
+	 * @return ResponseDTO
+	 * @throws LoginException
+	 * @throws UserNotFoundException
+	 */
 	@RequestMapping(value = "/resetPassword", method = RequestMethod.PUT)
 	public ResponseEntity<Response> resetPassword(@RequestHeader("token") String token,
 			@RequestBody ResetPassword resetPassword) throws LoginException, UserNotFoundException {

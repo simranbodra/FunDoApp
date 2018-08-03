@@ -7,8 +7,8 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
-import com.bridgelabz.fundoonotes.note.utility.NoteUtility;
 import com.bridgelabz.fundoonotes.user.repositories.UserRepository;
+import com.bridgelabz.fundoonotes.user.utility.JWTokenProvider;
 
 @Component
 public class NoteInterceptor implements HandlerInterceptor {
@@ -17,6 +17,9 @@ public class NoteInterceptor implements HandlerInterceptor {
 
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private JWTokenProvider tokenProvider;
 
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object object) throws Exception {
@@ -24,7 +27,7 @@ public class NoteInterceptor implements HandlerInterceptor {
 		
 		String token = request.getHeader("Authorization");
 		
-		String userId = NoteUtility.parseJWT(token);
+		String userId = tokenProvider.parseJWT(token);
 		
 		if (userRepository.findById(userId).isPresent()) {
 			request.setAttribute("UserId", userId);

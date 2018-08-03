@@ -3,6 +3,7 @@ package com.bridgelabz.fundoonotes.note.services;
 import java.text.ParseException;
 import java.util.List;
 
+import com.bridgelabz.fundoonotes.note.exceptions.InvalidLabelNameException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelNotFoundException;
 import com.bridgelabz.fundoonotes.note.exceptions.NoteException;
@@ -10,7 +11,6 @@ import com.bridgelabz.fundoonotes.note.exceptions.NoteNotFoundException;
 import com.bridgelabz.fundoonotes.note.exceptions.ReminderException;
 import com.bridgelabz.fundoonotes.note.exceptions.UnauthorizedException;
 import com.bridgelabz.fundoonotes.note.models.CreateNote;
-import com.bridgelabz.fundoonotes.note.models.LabelDTO;
 import com.bridgelabz.fundoonotes.note.models.UpdateNote;
 import com.bridgelabz.fundoonotes.note.models.NoteDTO;
 
@@ -148,7 +148,7 @@ public interface NoteService {
 	 * @throws NoteNotFoundException
 	 * @throws UnauthorizedException
 	 */
-	public void addPinToNote(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException;
+	public void addPin(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException;
 
 	/**
 	 * To remove pin on note
@@ -158,7 +158,7 @@ public interface NoteService {
 	 * @throws NoteNotFoundException
 	 * @throws UnauthorizedException
 	 */
-	public void removePinOnNote(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException;
+	public void removePin(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException;
 
 	/**
 	 * To archive a note
@@ -190,25 +190,6 @@ public interface NoteService {
 	public List<NoteDTO> viewArchivedNote(String userId) throws NoteNotFoundException;
 
 	/**
-	 * To create a label
-	 * 
-	 * @param userId
-	 * @param labelName
-	 * @return LabelDTO
-	 * @throws LabelException
-	 */
-	public LabelDTO createNewLabel(String userId, String labelName) throws LabelException;
-
-	/**
-	 * To get list of label
-	 * 
-	 * @param userId
-	 * @return list of LabelDTO
-	 * @throws LabelNotFoundException
-	 */
-	public List<LabelDTO> getAllLabel(String userId) throws LabelNotFoundException;
-
-	/**
 	 * To add a label to note
 	 * 
 	 * @param userId
@@ -218,31 +199,10 @@ public interface NoteService {
 	 * @throws UnauthorizedException
 	 * @throws LabelException
 	 * @throws LabelNotFoundException
+	 * @throws InvalidLabelNameException
 	 */
-	public void addLabelToNote(String userId, String noteId, String labelName)
-			throws NoteNotFoundException, UnauthorizedException, LabelException, LabelNotFoundException;
-
-	/**
-	 * TO update a label
-	 * 
-	 * @param userId
-	 * @param labelId
-	 * @param labelName
-	 * @throws UnauthorizedException
-	 * @throws LabelNotFoundException
-	 */
-	public void updateLabel(String userId, String labelId, String labelName)
-			throws UnauthorizedException, LabelNotFoundException;
-
-	/**
-	 * To delete a label
-	 * 
-	 * @param userId
-	 * @param labelId
-	 * @throws UnauthorizedException
-	 * @throws LabelNotFoundException
-	 */
-	public void deleteLabel(String userId, String labelId) throws UnauthorizedException, LabelNotFoundException;
+	public void addLabel(String userId, String noteId, String labelName) throws NoteNotFoundException,
+			UnauthorizedException, LabelException, LabelNotFoundException, InvalidLabelNameException;
 
 	/**
 	 * To delete a label from a note
@@ -254,17 +214,7 @@ public interface NoteService {
 	 * @throws UnauthorizedException
 	 * @throws LabelNotFoundException
 	 */
-	public void deleteLabelFromNote(String userId, String noteId, String labelId)
+	public void deleteNoteLabel(String userId, String noteId, String labelId)
 			throws NoteNotFoundException, UnauthorizedException, LabelNotFoundException;
-
-	/**
-	 * To get notes of a label
-	 * 
-	 * @param userId
-	 * @param labelId
-	 * @return
-	 * @throws LabelNotFoundException
-	 */
-	public List<NoteDTO> getLabel(String userId, String labelId) throws LabelNotFoundException;
 
 }

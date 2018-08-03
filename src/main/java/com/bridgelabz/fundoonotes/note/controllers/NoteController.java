@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bridgelabz.fundoonotes.note.exceptions.InvalidLabelNameException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelNotFoundException;
 import com.bridgelabz.fundoonotes.note.exceptions.NoteException;
@@ -283,7 +284,7 @@ public class NoteController {
 			throws NoteNotFoundException, UnauthorizedException {
 		String userId = (String) request.getAttribute("UserId");
 
-		noteService.addPinToNote(userId, noteId);
+		noteService.addPin(userId, noteId);
 
 		Response response = new Response();
 		response.setMessage("Pinned the note");
@@ -306,7 +307,7 @@ public class NoteController {
 			throws NoteNotFoundException, UnauthorizedException {
 		String userId = (String) request.getAttribute("UserId");
 
-		noteService.removePinOnNote(userId, noteId);
+		noteService.removePin(userId, noteId);
 
 		Response response = new Response();
 		response.setMessage("Pin removed on the note");
@@ -386,14 +387,15 @@ public class NoteController {
 	 * @throws UnauthorizedException
 	 * @throws LabelException
 	 * @throws LabelNotFoundException
+	 * @throws InvalidLabelNameException 
 	 */
 	@RequestMapping(value = "/addLabelToNote/{noteId}", method = RequestMethod.PUT)
 	public ResponseEntity<Response> addLabel(HttpServletRequest request, @PathVariable String noteId,
 			@RequestParam String labelName)
-			throws NoteNotFoundException, UnauthorizedException, LabelException, LabelNotFoundException {
+			throws NoteNotFoundException, UnauthorizedException, LabelException, LabelNotFoundException, InvalidLabelNameException {
 		String userId = (String) request.getAttribute("UserId");
 
-		noteService.addLabelToNote(userId, noteId, labelName);
+		noteService.addLabel(userId, noteId, labelName);
 
 		Response response = new Response();
 		response.setMessage("Label added to the note");
@@ -417,7 +419,7 @@ public class NoteController {
 			@RequestParam String labelId) throws NoteNotFoundException, UnauthorizedException, LabelNotFoundException {
 		String userId = (String) request.getAttribute("UserId");
 
-		noteService.deleteLabelFromNote(userId, noteId, labelId);
+		noteService.deleteNoteLabel(userId, noteId, labelId);
 
 		Response response = new Response();
 		response.setMessage("Label deleted from note");

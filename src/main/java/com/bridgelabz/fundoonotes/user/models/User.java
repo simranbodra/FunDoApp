@@ -1,9 +1,9 @@
 package com.bridgelabz.fundoonotes.user.models;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.elasticsearch.annotations.Document;
 
-@Document
+@Document(indexName = "usersindex", type = "users")
 public class User {
 	
 	@Id

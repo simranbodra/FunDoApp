@@ -18,7 +18,7 @@ public interface UserService {
 
 	public void activate(String token) throws LoginException;
 
-	public void sendPasswordLink(String email) throws MessagingException;
+	public void sendPasswordLink(String email) throws MessagingException, UserNotFoundException;
 
 	public void passwordReset(String email, ResetPassword resetPassword) throws LoginException, UserNotFoundException;
 

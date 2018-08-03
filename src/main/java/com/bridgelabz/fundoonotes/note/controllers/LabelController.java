@@ -13,12 +13,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bridgelabz.fundoonotes.note.exceptions.InvalidLabelNameException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelNotFoundException;
 import com.bridgelabz.fundoonotes.note.exceptions.UnauthorizedException;
 import com.bridgelabz.fundoonotes.note.models.LabelDTO;
 import com.bridgelabz.fundoonotes.note.models.NoteDTO;
-import com.bridgelabz.fundoonotes.note.services.NoteService;
+import com.bridgelabz.fundoonotes.note.services.LabelService;
 import com.bridgelabz.fundoonotes.user.models.Response;
 
 @RestController
@@ -26,7 +27,7 @@ import com.bridgelabz.fundoonotes.user.models.Response;
 public class LabelController {
 
 	@Autowired
-	private NoteService noteService;
+	private LabelService labelService;
 
 	/**
 	 * to create a new Label
@@ -35,13 +36,14 @@ public class LabelController {
 	 * @param labelName
 	 * @return ResponseDTO
 	 * @throws LabelException
+	 * @throws InvalidLabelNameException 
 	 */
 	@RequestMapping(value = "/createLabel", method = RequestMethod.POST)
 	public ResponseEntity<LabelDTO> createLabel(HttpServletRequest request, @RequestParam String labelName)
-			throws LabelException {
+			throws LabelException, InvalidLabelNameException {
 		String userId = (String) request.getAttribute("UserId");
 
-		LabelDTO labelDto = noteService.createNewLabel(userId, labelName);
+		LabelDTO labelDto = labelService.createLabel(userId, labelName);
 
 		return new ResponseEntity<>(labelDto, HttpStatus.OK);
 	}
@@ -58,7 +60,7 @@ public class LabelController {
 	public ResponseEntity<List<LabelDTO>> getAllLabel(HttpServletRequest request) throws LabelNotFoundException {
 		String userId = (String) request.getAttribute("UserId");
 
-		List<LabelDTO> labelList = noteService.getAllLabel(userId);
+		List<LabelDTO> labelList = labelService.getAllLabel(userId);
 
 		return new ResponseEntity<>(labelList, HttpStatus.OK);
 	}
@@ -78,7 +80,7 @@ public class LabelController {
 			@RequestParam String labelName) throws UnauthorizedException, LabelNotFoundException {
 		String userId = (String) request.getAttribute("UserId");
 
-		noteService.updateLabel(userId, labelId, labelName);
+		labelService.updateLabel(userId, labelId, labelName);
 
 		Response response = new Response();
 		response.setMessage("Label edited");
@@ -100,7 +102,7 @@ public class LabelController {
 			throws UnauthorizedException, LabelNotFoundException {
 		String userId = (String) request.getAttribute("UserId");
 
-		noteService.deleteLabel(userId, labelId);
+		labelService.deleteLabel(userId, labelId);
 
 		Response response = new Response();
 		response.setMessage("Label deleted");
@@ -121,7 +123,7 @@ public class LabelController {
 			throws LabelNotFoundException {
 		String userId = (String) request.getAttribute("UserId");
 
-		List<NoteDTO> notes = noteService.getLabel(userId, labelId);
+		List<NoteDTO> notes = labelService.getLabel(userId, labelId);
 
 		return new ResponseEntity<>(notes, HttpStatus.OK);
 	}

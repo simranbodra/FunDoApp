@@ -18,7 +18,10 @@ import com.bridgelabz.fundoonotes.user.models.Registration;
 import com.bridgelabz.fundoonotes.user.models.ResetPassword;
 import com.bridgelabz.fundoonotes.user.models.User;
 import com.bridgelabz.fundoonotes.user.rabbitmq.MailProducerService;
+import com.bridgelabz.fundoonotes.user.repositories.TokenRepository;
+import com.bridgelabz.fundoonotes.user.repositories.UserElasticsearchRepository;
 import com.bridgelabz.fundoonotes.user.repositories.UserRepository;
+import com.bridgelabz.fundoonotes.user.utility.JWTokenProvider;
 import com.bridgelabz.fundoonotes.user.utility.UserUtility;
 
 @Service
@@ -26,12 +29,21 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+	private UserElasticsearchRepository userElasticsearchRepository;
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
 	@Autowired
+	private JWTokenProvider tokenProvider;
+
+	@Autowired
 	private MailProducerService producer;
+
+	@Autowired
+	private TokenRepository tokenRepository;
 
 	@Value("${activationLink}")
 	private String activationLink;
@@ -57,12 +69,15 @@ public class UserServiceImpl implements UserService {
 		user.setPassword(password);
 
 		userRepository.save(user);
+		
+		userElasticsearchRepository.save(user);
 
-		String token = UserUtility.tokenGenerator(user.getUserId());
+		String token = tokenProvider.tokenGenerator(user.getUserId());
 		Mail mail = new Mail();
 		mail.setTo(user.getEmail());
 		mail.setSubject("Account Activation Mail");
 		mail.setBody(activationLink + token);
+		
 		producer.send(mail);
 	}
 
@@ -84,7 +99,7 @@ public class UserServiceImpl implements UserService {
 			throw new UserNotFoundException("Incorrect Password");
 		}
 
-		String token = UserUtility.tokenGenerator(user.get().getUserId());
+		String token = tokenProvider.tokenGenerator(user.get().getUserId());
 
 		return token;
 
@@ -92,25 +107,38 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public void activate(String token) throws LoginException {
-		String userId = UserUtility.parseJWT(token);
+		String userId = tokenProvider.parseJWT(token);
 
 		Optional<User> optionalUser = userRepository.findById(userId);
+		
 		User user = optionalUser.get();
+		
 		user.setActive(true);
+		
 		userRepository.save(user);
+		
+		userElasticsearchRepository.save(user);
 
 	}
 
 	@Override
-	public void sendPasswordLink(String email) throws MessagingException {
+	public void sendPasswordLink(String email) throws MessagingException, UserNotFoundException {
 
 		Optional<User> user = userRepository.findByEmail(email);
-		String token = UserUtility.tokenGenerator(user.get().getUserId());
+
+		if (!user.isPresent()) {
+			throw new UserNotFoundException("Email not registered");
+		}
+
+		String token = UserUtility.generateUUID();
+
+		tokenRepository.save(token, user.get().getUserId());
 
 		Mail mail = new Mail();
 		mail.setTo(email);
 		mail.setSubject("Account Activation Mail");
 		mail.setBody(resetPasswordLink + token);
+		
 		producer.send(mail);
 	}
 
@@ -118,28 +146,18 @@ public class UserServiceImpl implements UserService {
 	public void passwordReset(String token, ResetPassword resetPassword) throws LoginException, UserNotFoundException {
 		UserUtility.validateUserForResetPassword(resetPassword);
 
-		String userId = UserUtility.parseJWT(token);
-
-		if (!userRepository.existsById(userId)) {
-			throw new UserNotFoundException("Email is not registered");
-		}
+		String userId = tokenRepository.get(token);
 
 		Optional<User> optionalUser = userRepository.findById(userId);
 
-		User user = new User();
-		if (optionalUser.isPresent()) {
-			user.setUserId(optionalUser.get().getUserId());
-			user.setName(optionalUser.get().getName());
-			user.setEmail(optionalUser.get().getEmail());
-			user.setPhoneNumber(optionalUser.get().getPhoneNumber());
+		User user = optionalUser.get();
 
-			String password = passwordEncoder.encode(resetPassword.getPassword());
+		String password = passwordEncoder.encode(resetPassword.getPassword());
 
-			user.setPassword(password);
-			user.setActive(true);
+		user.setPassword(password);
+		user.setActive(true);
 
-			userRepository.save(user);
-		}
+		userRepository.save(user);
 
 	}
 }

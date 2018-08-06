@@ -55,7 +55,7 @@ public class LabelServiceImpl implements LabelService {
 			throw new InvalidLabelNameException("Invalid LabelName");
 		}
 
-		Optional<Label> optionalLabel = labelElasticsearchRepository.findByLabelNameAndUserId(labelName, userId);
+		Optional<Label> optionalLabel = labelRepository.findByLabelNameAndUserId(labelName, userId);
 		if (optionalLabel.isPresent()) {
 			throw new LabelException("Label with this name already exists");
 		}
@@ -85,7 +85,7 @@ public class LabelServiceImpl implements LabelService {
 	 */
 	@Override
 	public List<LabelDTO> getAllLabel(String userId) throws LabelNotFoundException {
-		List<Label> labelList = labelElasticsearchRepository.findAllByUserId(userId);
+		List<Label> labelList = labelRepository.findAllByUserId(userId);
 
 		if (labelList.isEmpty()) {
 			throw new LabelNotFoundException("No Labels found");
@@ -110,7 +110,7 @@ public class LabelServiceImpl implements LabelService {
 	public void updateLabel(String userId, String labelId, String labelName)
 			throws UnauthorizedException, LabelNotFoundException {
 
-		Optional<Label> optionalLabel = labelElasticsearchRepository.findByLabelIdAndUserId(labelId, userId);
+		Optional<Label> optionalLabel = labelRepository.findByLabelIdAndUserId(labelId, userId);
 
 		if (!optionalLabel.isPresent()) {
 			throw new LabelNotFoundException("No such label found");
@@ -123,7 +123,7 @@ public class LabelServiceImpl implements LabelService {
 
 		labelElasticsearchRepository.save(label);
 
-		List<Note> noteListByUserId = noteElasticsearchRepository.findAllByUserId(userId);
+		List<Note> noteListByUserId = noteRepository.findAllByUserId(userId);
 
 		for (int i = 0; i < noteListByUserId.size(); i++) {
 			Note note = noteListByUserId.get(i);
@@ -148,7 +148,7 @@ public class LabelServiceImpl implements LabelService {
 	 */
 	@Override
 	public void deleteLabel(String userId, String labelId) throws LabelNotFoundException {
-		Optional<Label> optionalLabel = labelElasticsearchRepository.findByLabelIdAndUserId(labelId, userId);
+		Optional<Label> optionalLabel = labelRepository.findByLabelIdAndUserId(labelId, userId);
 
 		if (!optionalLabel.isPresent()) {
 			throw new LabelNotFoundException("No such label found");
@@ -158,7 +158,7 @@ public class LabelServiceImpl implements LabelService {
 
 		labelRepository.deleteById(labelId);
 
-		List<Note> noteListByUserId = noteElasticsearchRepository.findAllByUserId(userId);
+		List<Note> noteListByUserId = noteRepository.findAllByUserId(userId);
 
 		for (int i = 0; i < noteListByUserId.size(); i++) {
 			Note note = noteListByUserId.get(i);
@@ -184,13 +184,13 @@ public class LabelServiceImpl implements LabelService {
 	 */
 	@Override
 	public List<NoteDTO> getLabel(String userId, String labelId) throws LabelNotFoundException {
-		Optional<Label> optionalLabel = labelElasticsearchRepository.findByLabelIdAndUserId(labelId, userId);
+		Optional<Label> optionalLabel = labelRepository.findByLabelIdAndUserId(labelId, userId);
 
 		if (!optionalLabel.isPresent()) {
 			throw new LabelNotFoundException("No such label found");
 		}
 
-		List<Note> noteListByUserId = noteElasticsearchRepository.findAllByUserId(userId);
+		List<Note> noteListByUserId = noteRepository.findAllByUserId(userId);
 
 		List<NoteDTO> noteList = new ArrayList<>();
 

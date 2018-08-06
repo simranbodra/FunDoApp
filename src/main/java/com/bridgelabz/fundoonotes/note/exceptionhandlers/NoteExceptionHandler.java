@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.bridgelabz.fundoonotes.note.exceptions.GetLinkInfoException;
 import com.bridgelabz.fundoonotes.note.exceptions.InvalidLabelNameException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelNotFoundException;
@@ -92,6 +93,17 @@ public class NoteExceptionHandler {
 		Response response = new Response();
 		response.setMessage(exception.getMessage());
 		response.setStatus(96);
+
+		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+	}
+	
+	@ExceptionHandler(GetLinkInfoException.class)
+	public ResponseEntity<Response> handleGetLinkInfoException(GetLinkInfoException exception) {
+		logger.info("Error while getting link information " + exception.getMessage(), exception);
+
+		Response response = new Response();
+		response.setMessage(exception.getMessage());
+		response.setStatus(97);
 
 		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 	}

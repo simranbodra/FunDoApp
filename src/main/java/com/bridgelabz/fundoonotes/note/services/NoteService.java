@@ -3,6 +3,7 @@ package com.bridgelabz.fundoonotes.note.services;
 import java.text.ParseException;
 import java.util.List;
 
+import com.bridgelabz.fundoonotes.note.exceptions.GetLinkInfoException;
 import com.bridgelabz.fundoonotes.note.exceptions.InvalidLabelNameException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelNotFoundException;
@@ -25,9 +26,10 @@ public interface NoteService {
 	 * @throws NoteException
 	 * @throws ReminderException
 	 * @throws ParseException
+	 * @throws GetLinkInfoException
 	 */
 	public NoteDTO createNote(CreateNote newNote, String userId)
-			throws NoteException, ReminderException, ParseException;
+			throws NoteException, ReminderException, GetLinkInfoException;
 
 	/**
 	 * To update a note
@@ -42,7 +44,7 @@ public interface NoteService {
 	 * @throws ParseException
 	 */
 	public void updateNote(UpdateNote updateNote, String userId, String noteId)
-			throws NoteException, NoteNotFoundException, UnauthorizedException, ReminderException, ParseException;
+			throws NoteException, NoteNotFoundException, UnauthorizedException, ReminderException;
 
 	/**
 	 * Move note to trash
@@ -74,8 +76,10 @@ public interface NoteService {
 	 * @return NoteDTO
 	 * @throws NoteNotFoundException
 	 * @throws UnauthorizedException
+	 * @throws GetLinkInfoException
 	 */
-	public NoteDTO getNote(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException;
+	public NoteDTO getNote(String userId, String noteId)
+			throws NoteNotFoundException, UnauthorizedException, GetLinkInfoException;
 
 	/**
 	 * To get list of notes
@@ -83,8 +87,9 @@ public interface NoteService {
 	 * @param userId
 	 * @return list of NoteDTO
 	 * @throws NoteNotFoundException
+	 * @throws GetLinkInfoException
 	 */
-	public List<NoteDTO> getAllNotes(String userId) throws NoteNotFoundException;
+	public List<NoteDTO> getAllNotes(String userId) throws NoteNotFoundException, GetLinkInfoException;
 
 	/**
 	 * To empty trash
@@ -100,8 +105,9 @@ public interface NoteService {
 	 * @param userId
 	 * @return list of NoteDTO
 	 * @throws NoteNotFoundException
+	 * @throws GetLinkInfoException
 	 */
-	public List<NoteDTO> getTrash(String userId) throws NoteNotFoundException;
+	public List<NoteDTO> getTrash(String userId) throws NoteNotFoundException, GetLinkInfoException;
 
 	/**
 	 * To set color on the note
@@ -128,7 +134,7 @@ public interface NoteService {
 	 * @throws ParseException
 	 */
 	public void addNoteReminder(String userId, String noteId, String reminderDate)
-			throws NoteNotFoundException, UnauthorizedException, ReminderException, ParseException;
+			throws NoteNotFoundException, UnauthorizedException, ReminderException;
 
 	/**
 	 * To remove reminder from note
@@ -186,8 +192,9 @@ public interface NoteService {
 	 * @param userId
 	 * @return list of NoteDTO
 	 * @throws NoteNotFoundException
+	 * @throws GetLinkInfoException
 	 */
-	public List<NoteDTO> viewArchivedNote(String userId) throws NoteNotFoundException;
+	public List<NoteDTO> getArchivedNote(String userId) throws NoteNotFoundException, GetLinkInfoException;
 
 	/**
 	 * To add a label to note

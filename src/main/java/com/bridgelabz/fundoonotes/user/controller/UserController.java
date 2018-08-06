@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,7 @@ import com.bridgelabz.fundoonotes.user.models.Login;
 import com.bridgelabz.fundoonotes.user.models.Registration;
 import com.bridgelabz.fundoonotes.user.models.ResetPassword;
 import com.bridgelabz.fundoonotes.user.models.Response;
+import com.bridgelabz.fundoonotes.user.services.FacebookService;
 import com.bridgelabz.fundoonotes.user.services.UserService;
 
 @RestController
@@ -28,6 +30,9 @@ public class UserController {
 
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	private FacebookService facebookService;
 
 	/**
 	 * TO register a user
@@ -48,6 +53,21 @@ public class UserController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
+	@RequestMapping(value = "/createFacebookAuthorization", method = RequestMethod.GET)
+	public String createFacebookAuthorization() {
+		return facebookService.createFacebookAuthorizationURL();
+	}
+	
+	@RequestMapping(value = "/facebook", method = RequestMethod.GET)
+	public void createFacebookAccessToken(@RequestParam String code) {
+		facebookService.createFacebookAccessToken(code);
+	}
+	
+	@RequestMapping(value = "/getName", method = RequestMethod.GET)
+	public String getNameResponse() {
+		return facebookService.getName();
+	}
+	
 	/**
 	 * For User login
 	 * @param login

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bridgelabz.fundoonotes.note.exceptions.GetLinkInfoException;
 import com.bridgelabz.fundoonotes.note.exceptions.InvalidLabelNameException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelNotFoundException;
@@ -44,10 +45,11 @@ public class NoteController {
 	 * @throws NoteException
 	 * @throws ReminderException
 	 * @throws ParseException
+	 * @throws GetLinkInfoException 
 	 */
 	@RequestMapping(value = "/create", method = RequestMethod.POST)
 	public ResponseEntity<NoteDTO> createNote(HttpServletRequest request, @RequestBody CreateNote newNote)
-			throws NoteException, ReminderException, ParseException {
+			throws NoteException, ReminderException, ParseException, GetLinkInfoException {
 
 		String userId = (String) request.getAttribute("UserId");
 
@@ -64,10 +66,11 @@ public class NoteController {
 	 * @return NoteDTO
 	 * @throws NoteNotFoundException
 	 * @throws UnauthorizedException
+	 * @throws GetLinkInfoException 
 	 */
 	@RequestMapping(value = "/getNote/{noteId}", method = RequestMethod.GET)
 	public ResponseEntity<NoteDTO> getNote(HttpServletRequest request, @PathVariable String noteId)
-			throws NoteNotFoundException, UnauthorizedException {
+			throws NoteNotFoundException, UnauthorizedException, GetLinkInfoException {
 		String userId = (String) request.getAttribute("UserId");
 
 		NoteDTO noteDto = noteService.getNote(userId, noteId);
@@ -81,9 +84,10 @@ public class NoteController {
 	 * @param request
 	 * @return List of notes
 	 * @throws NoteNotFoundException
+	 * @throws GetLinkInfoException 
 	 */
 	@RequestMapping(value = "/getAllNotes", method = RequestMethod.GET)
-	public ResponseEntity<List<NoteDTO>> getAllNotes(HttpServletRequest request) throws NoteNotFoundException {
+	public ResponseEntity<List<NoteDTO>> getAllNotes(HttpServletRequest request) throws NoteNotFoundException, GetLinkInfoException {
 		String userId = (String) request.getAttribute("UserId");
 
 		List<NoteDTO> noteList = noteService.getAllNotes(userId);
@@ -188,9 +192,10 @@ public class NoteController {
 	 * @param request
 	 * @return list of trash notes
 	 * @throws NoteNotFoundException
+	 * @throws GetLinkInfoException 
 	 */
 	@RequestMapping(value = "/getTrash", method = RequestMethod.GET)
-	public ResponseEntity<List<NoteDTO>> getTrash(HttpServletRequest request) throws NoteNotFoundException {
+	public ResponseEntity<List<NoteDTO>> getTrash(HttpServletRequest request) throws NoteNotFoundException, GetLinkInfoException {
 		String userId = (String) request.getAttribute("UserId");
 
 		List<NoteDTO> trashList = noteService.getTrash(userId);
@@ -366,12 +371,13 @@ public class NoteController {
 	 * @param request
 	 * @return ResponseDTO
 	 * @throws NoteNotFoundException
+	 * @throws GetLinkInfoException 
 	 */
 	@RequestMapping(value = "/getArchiveNotes", method = RequestMethod.POST)
-	public ResponseEntity<List<NoteDTO>> viewArchiveNotes(HttpServletRequest request) throws NoteNotFoundException {
+	public ResponseEntity<List<NoteDTO>> viewArchiveNotes(HttpServletRequest request) throws NoteNotFoundException, GetLinkInfoException {
 		String userId = (String) request.getAttribute("UserId");
 
-		List<NoteDTO> archivedNoteList = noteService.viewArchivedNote(userId);
+		List<NoteDTO> archivedNoteList = noteService.getArchivedNote(userId);
 
 		return new ResponseEntity<>(archivedNoteList, HttpStatus.OK);
 	}

@@ -14,6 +14,7 @@ public class NoteDTO {
 	private boolean pin;
 	private boolean archive;
 	private List<LabelDTO> listOfLabel;
+	private List<URLInfo> listOfUrl;
 
 	public NoteDTO() {
 		super();
@@ -22,10 +23,11 @@ public class NoteDTO {
 	public String getNoteId() {
 		return noteId;
 	}
-	
+
 	public void setNoteId(String noteId) {
 		this.noteId = noteId;
 	}
+
 	public String getTitle() {
 		return title;
 	}
@@ -65,28 +67,44 @@ public class NoteDTO {
 	public void setReminder(String reminder) {
 		this.reminder = reminder;
 	}
-	
+
 	public boolean getPin() {
 		return this.pin;
 	}
-	
+
 	public void setPin(boolean pin) {
 		this.pin = pin;
 	}
-	
+
 	public boolean getArchive() {
 		return this.archive;
 	}
-	
+
 	public void setArchive(boolean archive) {
 		this.archive = archive;
 	}
-	
-	public List<LabelDTO> getListOfLabel(){
+
+	public List<LabelDTO> getListOfLabel() {
 		return this.listOfLabel;
 	}
-	
+
 	public void setListOfLabel(List<LabelDTO> listOfLabel) {
 		this.listOfLabel = listOfLabel;
 	}
+
+	public List<URLInfo> getListOfUrl() {
+		return listOfUrl;
+	}
+
+	public void setListOfUrl(List<URLInfo> listOfUrl) {
+		this.listOfUrl = listOfUrl;
+	}
+
+	@Override
+	public String toString() {
+		return "NoteDTO [noteId=" + noteId + ", title=" + title + ", description=" + description + ", createdAt="
+				+ createdAt + ", lastUpdated=" + lastUpdated + ", reminder=" + reminder + ", pin=" + pin + ", archive="
+				+ archive + ", listOfLabel=" + listOfLabel + ", listOfUrl=" + listOfUrl + "]";
+	}
+
 }

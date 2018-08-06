@@ -22,24 +22,19 @@ public class Note {
 	private boolean pin;
 	private boolean archive;
 	private List<LabelDTO> listOfLabel;
+	private List<String> listOfUrl;
 
 	public Note() {
 		super();
 	}
 
-	
-
 	public String getNoteId() {
 		return noteId;
 	}
 
-
-
 	public void setNoteId(String noteId) {
 		this.noteId = noteId;
 	}
-
-
 
 	public String getUserId() {
 		return userId;
@@ -104,36 +99,45 @@ public class Note {
 	public void setTrash(boolean trash) {
 		this.trash = trash;
 	}
-	
+
 	public boolean getPin() {
 		return pin;
 	}
-	
+
 	public void setPin(boolean pin) {
 		this.pin = pin;
 	}
-	
+
 	public boolean getArchive() {
 		return this.archive;
 	}
-	
+
 	public void setArchive(boolean archive) {
 		this.archive = archive;
 	}
-	
-	public List<LabelDTO> getListOfLabel(){
+
+	public List<LabelDTO> getListOfLabel() {
 		return this.listOfLabel;
 	}
-	
+
 	public void setListOfLabel(List<LabelDTO> listOfLabel) {
 		this.listOfLabel = listOfLabel;
+	}
+
+	public List<String> getListOfUrl() {
+		return listOfUrl;
+	}
+
+	public void setListOfUrl(List<String> listOfUrl) {
+		this.listOfUrl = listOfUrl;
 	}
 
 	@Override
 	public String toString() {
 		return "Note [noteId=" + noteId + ", userId=" + userId + ", title=" + title + ", description=" + description
 				+ ", colour=" + colour + ", createdAt=" + createdAt + ", lastUpdated=" + lastUpdated + ", reminder="
-				+ reminder + ", trash=" + trash + ", pin=" + pin + ", archive=" + archive + "]";
+				+ reminder + ", trash=" + trash + ", pin=" + pin + ", archive=" + archive + ", listOfLabel="
+				+ listOfLabel + ", listOfUrl=" + listOfUrl + "]";
 	}
 
 }

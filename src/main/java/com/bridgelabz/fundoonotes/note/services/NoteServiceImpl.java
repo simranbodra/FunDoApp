@@ -2,7 +2,6 @@ package com.bridgelabz.fundoonotes.note.services;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -13,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import com.bridgelabz.fundoonotes.note.exceptions.GetLinkInfoException;
 import com.bridgelabz.fundoonotes.note.exceptions.InvalidLabelNameException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelNotFoundException;
@@ -26,10 +26,12 @@ import com.bridgelabz.fundoonotes.note.models.LabelDTO;
 import com.bridgelabz.fundoonotes.note.models.Note;
 import com.bridgelabz.fundoonotes.note.models.UpdateNote;
 import com.bridgelabz.fundoonotes.note.models.NoteDTO;
+import com.bridgelabz.fundoonotes.note.models.URLInfo;
 import com.bridgelabz.fundoonotes.note.repositories.LabelElasticsearchRepository;
 import com.bridgelabz.fundoonotes.note.repositories.LabelRepository;
 import com.bridgelabz.fundoonotes.note.repositories.NoteElasticsearchRepository;
 import com.bridgelabz.fundoonotes.note.repositories.NoteRepository;
+import com.bridgelabz.fundoonotes.note.utility.LinkInfoProvider;
 import com.bridgelabz.fundoonotes.note.utility.NoteUtility;
 
 @Service
@@ -53,6 +55,9 @@ public class NoteServiceImpl implements NoteService {
 	@Autowired
 	private Environment environment;
 
+	@Autowired
+	private LinkInfoProvider linkInfoProvider;
+
 	/**
 	 * create a new note
 	 * 
@@ -62,10 +67,11 @@ public class NoteServiceImpl implements NoteService {
 	 * @throws NoteException
 	 * @throws ReminderException
 	 * @throws ParseException
+	 * @throws GetLinkInfoException
 	 */
 	@Override
 	public NoteDTO createNote(CreateNote newNote, String userId)
-			throws NoteException, ReminderException, ParseException {
+			throws NoteException, ReminderException, GetLinkInfoException {
 		NoteUtility.validateNewNote(newNote);
 
 		Note note = new Note();
@@ -86,9 +92,9 @@ public class NoteServiceImpl implements NoteService {
 		note.setPin(newNote.getPin());
 		note.setArchive(newNote.getArchive());
 
-		ArrayList<String> labelNameList = (ArrayList<String>) newNote.getListOfLabel();
+		List<String> labelNameList = newNote.getListOfLabel();
 
-		List<Label> userLabels = labelElasticsearchRepository.findAllByUserId(userId);
+		List<Label> userLabels = labelRepository.findAllByUserId(userId);
 
 		ArrayList<String> userLabelList = new ArrayList<>();
 		for (int j = 0; j < userLabels.size(); j++) {
@@ -114,8 +120,7 @@ public class NoteServiceImpl implements NoteService {
 					toBeAddedLabels.add(viewLabelToSave);
 
 				} else {
-					List<Label> optionalLabelToSave = labelElasticsearchRepository
-							.findAllByLabelName(labelNameList.get(i));
+					List<Label> optionalLabelToSave = labelRepository.findAllByLabelName(labelNameList.get(i));
 
 					for (int j = 0; j < optionalLabelToSave.size(); j++) {
 						if (optionalLabelToSave.get(j).getUserId().equalsIgnoreCase(userId)) {
@@ -133,11 +138,24 @@ public class NoteServiceImpl implements NoteService {
 
 		note.setListOfLabel(toBeAddedLabels);
 
+		String[] stringArray = newNote.getDescription().split(" ");
+
+		List<String> urlList = NoteUtility.getUrlList(stringArray);
+
+		note.setListOfUrl(urlList);
+
 		noteRepository.save(note);
 
 		noteElasticsearchRepository.save(note);
 
 		NoteDTO noteDto = modelMapper.map(note, NoteDTO.class);
+
+		List<URLInfo> urlInfoList = new ArrayList<>();
+		for (int j = 0; j < urlList.size(); j++) {
+			urlInfoList.add(linkInfoProvider.getLinkInformation(urlList.get(j)));
+		}
+		noteDto.setListOfUrl(urlInfoList);
+
 		return noteDto;
 	}
 
@@ -149,10 +167,12 @@ public class NoteServiceImpl implements NoteService {
 	 * @return ViewNoteDTO
 	 * @throws NoteNotFoundException
 	 * @throws UnauthorizedException
+	 * @throws GetLinkInfoException
 	 */
-	public NoteDTO getNote(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException {
+	public NoteDTO getNote(String userId, String noteId)
+			throws NoteNotFoundException, UnauthorizedException, GetLinkInfoException {
 
-		Optional<Note> optionalNote = noteElasticsearchRepository.findById(noteId);
+		Optional<Note> optionalNote = noteRepository.findById(noteId);
 
 		if (!optionalNote.isPresent()) {
 			throw new NoteNotFoundException(environment.getProperty("NoteNotFound"));
@@ -163,16 +183,14 @@ public class NoteServiceImpl implements NoteService {
 
 		Note note = optionalNote.get();
 
-		NoteDTO noteDto = new NoteDTO();
-		noteDto.setNoteId(note.getNoteId());
-		noteDto.setTitle(note.getTitle());
-		noteDto.setDescription(note.getDescription());
-		noteDto.setCreatedAt(note.getCreatedAt());
-		noteDto.setLastUpdated(note.getLastUpdated());
-		noteDto.setReminder(note.getReminder());
-		noteDto.setArchive(note.getArchive());
-		noteDto.setPin(note.getPin());
-		noteDto.setListOfLabel(note.getListOfLabel());
+		NoteDTO noteDto = modelMapper.map(note, NoteDTO.class);
+
+		List<String> urlList = note.getListOfUrl();
+		List<URLInfo> urlInfoList = new ArrayList<>();
+		for (int j = 0; j < urlList.size(); j++) {
+			urlInfoList.add(linkInfoProvider.getLinkInformation(urlList.get(j)));
+		}
+		noteDto.setListOfUrl(urlInfoList);
 
 		return noteDto;
 
@@ -184,55 +202,38 @@ public class NoteServiceImpl implements NoteService {
 	 * @param userId
 	 * @return list of ViewNoteDTO
 	 * @throws NoteNotFoundException
+	 * @throws GetLinkInfoException
 	 */
-	public List<NoteDTO> getAllNotes(String userId) throws NoteNotFoundException {
+	public List<NoteDTO> getAllNotes(String userId) throws NoteNotFoundException, GetLinkInfoException {
 
-		List<Note> noteList = noteElasticsearchRepository.findAllByUserIdAndTrash(userId, false);
+		List<Note> noteList = noteRepository.findAllByUserIdAndTrash(userId, false);
 
 		if (noteList.isEmpty()) {
 			throw new NoteNotFoundException("No Note Found");
 		}
 
-		List<NoteDTO> pinnedNoteDtoList = noteList.stream().filter(Note::getTrash)
-				.map(filterNote -> modelMapper.map(filterNote, NoteDTO.class)).collect(Collectors.toList());
-		/*List<NoteDTO> noteDtoList = new LinkedList<>();
+		List<NoteDTO> noteDtos = noteList.stream().map(filterNote -> modelMapper.map(filterNote, NoteDTO.class))
+				.collect(Collectors.toList());
+
 		for (int i = 0; i < noteList.size(); i++) {
-			if (noteList.get(i).getPin()) {
-				NoteDTO noteDto = new NoteDTO();
-				Note note = noteList.get(i);
+			List<String> urlList = noteList.get(i).getListOfUrl();
 
-				noteDto.setNoteId(note.getNoteId());
-				noteDto.setTitle(note.getTitle());
-				noteDto.setDescription(note.getDescription());
-				noteDto.setCreatedAt(note.getCreatedAt());
-				noteDto.setLastUpdated(note.getLastUpdated());
-				noteDto.setReminder(note.getReminder());
-				noteDto.setArchive(note.getArchive());
-				noteDto.setPin(note.getPin());
-				noteDto.setListOfLabel(note.getListOfLabel());
+			List<URLInfo> urlInfoList = new ArrayList<>();
 
-				noteDtoList.add(noteDto);
+			for (int j = 0; j < urlList.size(); j++) {
+				urlInfoList.add(linkInfoProvider.getLinkInformation(urlList.get(j)));
 			}
-		}*/
-
-		for (int j = 0; j < noteList.size(); j++) {
-			if (!noteList.get(j).getPin()) {
-				NoteDTO noteDto = new NoteDTO();
-				Note note = noteList.get(j);
-
-				noteDto.setNoteId(note.getNoteId());
-				noteDto.setTitle(note.getTitle());
-				noteDto.setDescription(note.getDescription());
-				noteDto.setCreatedAt(note.getCreatedAt());
-				noteDto.setLastUpdated(note.getLastUpdated());
-				noteDto.setReminder(note.getReminder());
-				noteDto.setArchive(note.getArchive());
-				noteDto.setPin(note.getPin());
-				noteDto.setListOfLabel(note.getListOfLabel());
-
-				noteDtoList.add(noteDto);
-			}
+			noteDtos.get(i).setListOfUrl(urlInfoList);
 		}
+
+		List<NoteDTO> pinnedNoteDtoList = noteDtos.stream().filter(NoteDTO::getPin).collect(Collectors.toList());
+
+		List<NoteDTO> unpinnedNoteDtoList = noteDtos.stream().filter(noteStream -> !noteStream.getPin())
+				.collect(Collectors.toList());
+
+		List<NoteDTO> noteDtoList = Stream.concat(pinnedNoteDtoList.stream(), unpinnedNoteDtoList.stream())
+				.collect(Collectors.toList());
+
 		return noteDtoList;
 
 	}
@@ -251,9 +252,9 @@ public class NoteServiceImpl implements NoteService {
 	 */
 	@Override
 	public void updateNote(UpdateNote updateNote, String userId, String noteId)
-			throws NoteException, NoteNotFoundException, UnauthorizedException, ReminderException, ParseException {
+			throws NoteException, NoteNotFoundException, UnauthorizedException, ReminderException{
 
-		Optional<Note> optionalNote = noteElasticsearchRepository.findById(noteId);
+		Optional<Note> optionalNote = noteRepository.findByNoteIdAndUserId(noteId, userId);
 
 		if (!optionalNote.isPresent()) {
 			throw new NoteNotFoundException(environment.getProperty("NoteNotFound"));
@@ -278,6 +279,12 @@ public class NoteServiceImpl implements NoteService {
 			note.setColour(updateNote.getColour());
 		}
 
+		String[] stringArray = note.getDescription().split(" ");
+
+		List<String> urlList = NoteUtility.getUrlList(stringArray);
+
+		note.setListOfUrl(urlList);
+
 		noteRepository.save(note);
 
 		noteElasticsearchRepository.save(note);
@@ -294,7 +301,7 @@ public class NoteServiceImpl implements NoteService {
 	@Override
 	public void deleteNote(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException {
 
-		Optional<Note> optionalNote = noteElasticsearchRepository.findById(noteId);
+		Optional<Note> optionalNote = noteRepository.findById(noteId);
 
 		if (!optionalNote.isPresent()) {
 			throw new NoteNotFoundException(environment.getProperty("NoteNotFound"));
@@ -323,7 +330,7 @@ public class NoteServiceImpl implements NoteService {
 	public void permanentNoteDelete(String userId, String noteId, boolean delete)
 			throws NoteNotFoundException, UnauthorizedException {
 
-		Optional<Note> optionalNote = noteElasticsearchRepository.findById(noteId);
+		Optional<Note> optionalNote = noteRepository.findById(noteId);
 
 		if (!optionalNote.isPresent()) {
 			throw new NoteNotFoundException(environment.getProperty("NoteNotFound"));
@@ -359,7 +366,7 @@ public class NoteServiceImpl implements NoteService {
 	@Override
 	public void emptyTrash(String userId) throws NoteNotFoundException {
 
-		List<Note> noteList = noteElasticsearchRepository.findAllByUserId(userId);
+		List<Note> noteList = noteRepository.findAllByUserId(userId);
 
 		if (noteList.isEmpty()) {
 			throw new NoteNotFoundException("No Note Found");
@@ -382,20 +389,32 @@ public class NoteServiceImpl implements NoteService {
 	 * @param userId
 	 * @return list of notes
 	 * @throws NoteNotFoundException
+	 * @throws GetLinkInfoException
 	 * 
 	 */
 	@Override
-	public List<NoteDTO> getTrash(String userId) throws NoteNotFoundException {
-		List<Note> noteList = noteElasticsearchRepository.findAllByUserId(userId);
+	public List<NoteDTO> getTrash(String userId) throws NoteNotFoundException, GetLinkInfoException {
+		List<Note> noteList = noteRepository.findAllByUserIdAndTrash(userId, true);
 
 		if (noteList.isEmpty()) {
-			throw new NoteNotFoundException("No note found");
+			throw new NoteNotFoundException("No Note Found");
 		}
 
-		List<NoteDTO> viewNoteList = noteList.stream().filter(Note::getTrash)
-				.map(filterNote -> modelMapper.map(filterNote, NoteDTO.class)).collect(Collectors.toList());
+		List<NoteDTO> noteDtos = noteList.stream().map(filterNote -> modelMapper.map(filterNote, NoteDTO.class))
+				.collect(Collectors.toList());
 
-		return viewNoteList;
+		for (int i = 0; i < noteList.size(); i++) {
+			List<String> urlList = noteList.get(i).getListOfUrl();
+
+			List<URLInfo> urlInfoList = new ArrayList<>();
+
+			for (int j = 0; j < urlList.size(); j++) {
+				urlInfoList.add(linkInfoProvider.getLinkInformation(urlList.get(j)));
+			}
+			noteDtos.get(i).setListOfUrl(urlInfoList);
+		}
+
+		return noteDtos;
 	}
 
 	/**
@@ -411,7 +430,7 @@ public class NoteServiceImpl implements NoteService {
 	@Override
 	public void addColour(String userId, String noteId, String colour)
 			throws NoteNotFoundException, UnauthorizedException, NoteException {
-		Optional<Note> optionalNote = noteElasticsearchRepository.findById(noteId);
+		Optional<Note> optionalNote = noteRepository.findById(noteId);
 
 		if (!optionalNote.isPresent()) {
 			throw new NoteNotFoundException(environment.getProperty("NoteNotFound"));
@@ -445,11 +464,11 @@ public class NoteServiceImpl implements NoteService {
 	 */
 	@Override
 	public void addNoteReminder(String userId, String noteId, String reminderDate)
-			throws NoteNotFoundException, UnauthorizedException, ReminderException, ParseException {
+			throws NoteNotFoundException, UnauthorizedException, ReminderException {
 
 		NoteUtility.validateDate(reminderDate);
 
-		Optional<Note> optionalNote = noteElasticsearchRepository.findById(noteId);
+		Optional<Note> optionalNote = noteRepository.findById(noteId);
 
 		if (!optionalNote.isPresent()) {
 			throw new NoteNotFoundException(environment.getProperty("NoteNotFound"));
@@ -477,7 +496,7 @@ public class NoteServiceImpl implements NoteService {
 	@Override
 	public void removeReminder(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException {
 
-		Optional<Note> optionalNote = noteElasticsearchRepository.findById(noteId);
+		Optional<Note> optionalNote = noteRepository.findById(noteId);
 
 		if (!optionalNote.isPresent()) {
 			throw new NoteNotFoundException(environment.getProperty("NoteNotFound"));
@@ -506,7 +525,7 @@ public class NoteServiceImpl implements NoteService {
 	@Override
 	public void addPin(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException {
 
-		Optional<Note> optionalNote = noteElasticsearchRepository.findById(noteId);
+		Optional<Note> optionalNote = noteRepository.findById(noteId);
 
 		if (!optionalNote.isPresent()) {
 			throw new NoteNotFoundException(environment.getProperty("NoteNotFound"));
@@ -541,7 +560,7 @@ public class NoteServiceImpl implements NoteService {
 	@Override
 	public void removePin(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException {
 
-		Optional<Note> optionalNote = noteElasticsearchRepository.findById(noteId);
+		Optional<Note> optionalNote = noteRepository.findById(noteId);
 
 		if (!optionalNote.isPresent()) {
 			throw new NoteNotFoundException(environment.getProperty("NoteNotFound"));
@@ -570,7 +589,7 @@ public class NoteServiceImpl implements NoteService {
 	@Override
 	public void archiveNote(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException {
 
-		Optional<Note> optionalNote = noteElasticsearchRepository.findById(noteId);
+		Optional<Note> optionalNote = noteRepository.findById(noteId);
 
 		if (!optionalNote.isPresent()) {
 			throw new NoteNotFoundException(environment.getProperty("NoteNotFound"));
@@ -599,7 +618,7 @@ public class NoteServiceImpl implements NoteService {
 	@Override
 	public void removeArchiveNote(String userId, String noteId) throws NoteNotFoundException, UnauthorizedException {
 
-		Optional<Note> optionalNote = noteElasticsearchRepository.findById(noteId);
+		Optional<Note> optionalNote = noteRepository.findById(noteId);
 
 		if (!optionalNote.isPresent()) {
 			throw new NoteNotFoundException(environment.getProperty("NoteNotFound"));
@@ -622,32 +641,35 @@ public class NoteServiceImpl implements NoteService {
 	 * @param userId
 	 * @return list of archived notes
 	 * @throws NoteNotFoundException
+	 * @throws GetLinkInfoException
 	 * 
 	 */
 	@Override
-	public List<NoteDTO> viewArchivedNote(String userId) throws NoteNotFoundException {
+	public List<NoteDTO> getArchivedNote(String userId) throws NoteNotFoundException, GetLinkInfoException {
 
-		List<Note> noteList = noteElasticsearchRepository.findAllByUserId(userId);
+		List<Note> noteList = noteRepository.findAllByUserIdAndTrash(userId, false);
 
 		if (noteList.isEmpty()) {
-			throw new NoteNotFoundException("No note found");
+			throw new NoteNotFoundException("No Note Found");
 		}
 
-		List<NoteDTO> viewArchiveNoteList = new LinkedList<>();
+		List<NoteDTO> noteDtos = noteList.stream().map(filterNote -> modelMapper.map(filterNote, NoteDTO.class))
+				.collect(Collectors.toList());
+
 		for (int i = 0; i < noteList.size(); i++) {
-			if (!noteList.get(i).getTrash() && noteList.get(i).getArchive()) {
-				NoteDTO viewNote = new NoteDTO();
-				Note note = noteList.get(i);
-				viewNote.setNoteId(note.getNoteId());
-				viewNote.setTitle(note.getTitle());
-				viewNote.setDescription(note.getDescription());
-				viewNote.setCreatedAt(note.getCreatedAt());
-				viewNote.setLastUpdated(note.getLastUpdated());
-				viewNote.setReminder(note.getReminder());
-				viewArchiveNoteList.add(viewNote);
+			List<String> urlList = noteList.get(i).getListOfUrl();
+
+			List<URLInfo> urlInfoList = new ArrayList<>();
+
+			for (int j = 0; j < urlList.size(); j++) {
+				urlInfoList.add(linkInfoProvider.getLinkInformation(urlList.get(j)));
 			}
+			noteDtos.get(i).setListOfUrl(urlInfoList);
 		}
-		return viewArchiveNoteList;
+
+		List<NoteDTO> noteDtoList = noteDtos.stream().filter(NoteDTO::getArchive).collect(Collectors.toList());
+
+		return noteDtoList;
 	}
 
 	/**
@@ -669,7 +691,7 @@ public class NoteServiceImpl implements NoteService {
 			throw new InvalidLabelNameException("Invalid LabelName");
 		}
 
-		Optional<Note> optionalNote = noteElasticsearchRepository.findById(noteId);
+		Optional<Note> optionalNote = noteRepository.findById(noteId);
 
 		if (!optionalNote.isPresent()) {
 			throw new NoteNotFoundException(environment.getProperty("NoteNotFound"));
@@ -680,7 +702,7 @@ public class NoteServiceImpl implements NoteService {
 
 		Note note = optionalNote.get();
 
-		Optional<Label> optionalLabel = labelElasticsearchRepository.findByLabelNameAndUserId(labelName, userId);
+		Optional<Label> optionalLabel = labelRepository.findByLabelNameAndUserId(labelName, userId);
 
 		if (optionalLabel.isPresent()) {
 			Label label = optionalLabel.get();
@@ -721,16 +743,16 @@ public class NoteServiceImpl implements NoteService {
 	public void deleteNoteLabel(String userId, String noteId, String labelId)
 			throws NoteNotFoundException, UnauthorizedException, LabelNotFoundException {
 
-		Optional<Note> optionalNote = noteElasticsearchRepository.findById(noteId);
+		Optional<Note> optionalNote = noteRepository.findById(noteId);
 
 		if (!optionalNote.isPresent()) {
-			throw new NoteNotFoundException("Note with respective id not found");
+			throw new NoteNotFoundException(environment.getProperty("NoteNotFound"));
 		}
 		if (!optionalNote.get().getUserId().equals(userId)) {
 			throw new UnauthorizedException(environment.getProperty("UnauthorizedUser"));
 		}
 
-		Optional<Label> optionalLabel = labelElasticsearchRepository.findById(labelId);
+		Optional<Label> optionalLabel = labelRepository.findById(labelId);
 
 		if (!optionalLabel.isPresent()) {
 			throw new LabelNotFoundException("No such label found");
@@ -752,4 +774,5 @@ public class NoteServiceImpl implements NoteService {
 
 		noteElasticsearchRepository.save(note);
 	}
+
 }

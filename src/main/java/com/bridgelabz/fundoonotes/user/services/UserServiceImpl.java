@@ -29,7 +29,7 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Autowired
 	private UserElasticsearchRepository userElasticsearchRepository;
 
@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
 		user.setPassword(password);
 
 		userRepository.save(user);
-		
+
 		userElasticsearchRepository.save(user);
 
 		String token = tokenProvider.tokenGenerator(user.getUserId());
@@ -77,7 +77,7 @@ public class UserServiceImpl implements UserService {
 		mail.setTo(user.getEmail());
 		mail.setSubject("Account Activation Mail");
 		mail.setBody(activationLink + token);
-		
+
 		producer.send(mail);
 	}
 
@@ -101,6 +101,8 @@ public class UserServiceImpl implements UserService {
 
 		String token = tokenProvider.tokenGenerator(user.get().getUserId());
 
+		tokenRepository.save(user.get().getUserId(), token);
+
 		return token;
 
 	}
@@ -110,13 +112,13 @@ public class UserServiceImpl implements UserService {
 		String userId = tokenProvider.parseJWT(token);
 
 		Optional<User> optionalUser = userRepository.findById(userId);
-		
+
 		User user = optionalUser.get();
-		
+
 		user.setActive(true);
-		
+
 		userRepository.save(user);
-		
+
 		userElasticsearchRepository.save(user);
 
 	}
@@ -138,7 +140,7 @@ public class UserServiceImpl implements UserService {
 		mail.setTo(email);
 		mail.setSubject("Account Activation Mail");
 		mail.setBody(resetPasswordLink + token);
-		
+
 		producer.send(mail);
 	}
 

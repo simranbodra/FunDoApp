@@ -2,9 +2,11 @@ package com.bridgelabz.fundoonotes.note.services;
 
 import java.util.List;
 
+import com.bridgelabz.fundoonotes.note.exceptions.GetLinkInfoException;
 import com.bridgelabz.fundoonotes.note.exceptions.InvalidLabelNameException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelNotFoundException;
+import com.bridgelabz.fundoonotes.note.exceptions.NoteNotFoundException;
 import com.bridgelabz.fundoonotes.note.exceptions.UnauthorizedException;
 import com.bridgelabz.fundoonotes.note.models.LabelDTO;
 import com.bridgelabz.fundoonotes.note.models.NoteDTO;
@@ -54,6 +56,8 @@ public interface LabelService {
 	 * @param labelId
 	 * @return
 	 * @throws LabelNotFoundException
+	 * @throws GetLinkInfoException 
+	 * @throws NoteNotFoundException 
 	 */
-	public List<NoteDTO> getLabel(String userId, String labelId) throws LabelNotFoundException;
+	public List<NoteDTO> getLabel(String userId, String labelId) throws LabelNotFoundException, GetLinkInfoException, NoteNotFoundException;
 }

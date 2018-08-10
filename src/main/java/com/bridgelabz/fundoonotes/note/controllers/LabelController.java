@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bridgelabz.fundoonotes.note.exceptions.GetLinkInfoException;
 import com.bridgelabz.fundoonotes.note.exceptions.InvalidLabelNameException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelNotFoundException;
+import com.bridgelabz.fundoonotes.note.exceptions.NoteNotFoundException;
 import com.bridgelabz.fundoonotes.note.exceptions.UnauthorizedException;
 import com.bridgelabz.fundoonotes.note.models.LabelDTO;
 import com.bridgelabz.fundoonotes.note.models.NoteDTO;
@@ -36,7 +38,7 @@ public class LabelController {
 	 * @param labelName
 	 * @return ResponseDTO
 	 * @throws LabelException
-	 * @throws InvalidLabelNameException 
+	 * @throws InvalidLabelNameException
 	 */
 	@RequestMapping(value = "/createLabel", method = RequestMethod.POST)
 	public ResponseEntity<LabelDTO> createLabel(HttpServletRequest request, @RequestParam String labelName)
@@ -99,7 +101,7 @@ public class LabelController {
 	 */
 	@RequestMapping(value = "/deleteLabel/{labelId}", method = RequestMethod.DELETE)
 	public ResponseEntity<Response> deleteLabel(HttpServletRequest request, @PathVariable String labelId)
-			throws UnauthorizedException, LabelNotFoundException {
+			throws LabelNotFoundException {
 		String userId = (String) request.getAttribute("UserId");
 
 		labelService.deleteLabel(userId, labelId);
@@ -117,10 +119,12 @@ public class LabelController {
 	 * @param labelId
 	 * @return List of NoteDTO
 	 * @throws LabelNotFoundException
+	 * @throws NoteNotFoundException
+	 * @throws GetLinkInfoException
 	 */
 	@RequestMapping(value = "/getLabel{labelId}", method = RequestMethod.POST)
 	public ResponseEntity<List<NoteDTO>> getLabel(HttpServletRequest request, @PathVariable String labelId)
-			throws LabelNotFoundException {
+			throws LabelNotFoundException, GetLinkInfoException, NoteNotFoundException {
 		String userId = (String) request.getAttribute("UserId");
 
 		List<NoteDTO> notes = labelService.getLabel(userId, labelId);

@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class RabbitMQConfiuration {
+public class RabbitMQConfiguration {
 
 	@Value("${javainuse.rabbitmq.queue}")
 	String queueName;

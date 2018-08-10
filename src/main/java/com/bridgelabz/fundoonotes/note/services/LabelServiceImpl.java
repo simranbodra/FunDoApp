@@ -4,23 +4,28 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.bridgelabz.fundoonotes.note.exceptions.GetLinkInfoException;
 import com.bridgelabz.fundoonotes.note.exceptions.InvalidLabelNameException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelNotFoundException;
+import com.bridgelabz.fundoonotes.note.exceptions.NoteNotFoundException;
 import com.bridgelabz.fundoonotes.note.exceptions.UnauthorizedException;
 import com.bridgelabz.fundoonotes.note.models.Label;
 import com.bridgelabz.fundoonotes.note.models.LabelDTO;
 import com.bridgelabz.fundoonotes.note.models.Note;
 import com.bridgelabz.fundoonotes.note.models.NoteDTO;
+import com.bridgelabz.fundoonotes.note.models.URLInfo;
 import com.bridgelabz.fundoonotes.note.repositories.LabelElasticsearchRepository;
 import com.bridgelabz.fundoonotes.note.repositories.LabelRepository;
 import com.bridgelabz.fundoonotes.note.repositories.NoteElasticsearchRepository;
 import com.bridgelabz.fundoonotes.note.repositories.NoteRepository;
+import com.bridgelabz.fundoonotes.note.utility.LinkInfoProvider;
 
 @Service
 public class LabelServiceImpl implements LabelService {
@@ -39,6 +44,9 @@ public class LabelServiceImpl implements LabelService {
 
 	@Autowired
 	private ModelMapper modelMapper;
+	
+	@Autowired
+	private LinkInfoProvider linkInfoProvider;
 
 	/**
 	 * To create a label
@@ -123,10 +131,10 @@ public class LabelServiceImpl implements LabelService {
 
 		labelElasticsearchRepository.save(label);
 
-		List<Note> noteListByUserId = noteRepository.findAllByUserId(userId);
+		List<Note> noteList = noteRepository.findAllByUserId(userId);
 
-		for (int i = 0; i < noteListByUserId.size(); i++) {
-			Note note = noteListByUserId.get(i);
+		for (int i = 0; i < noteList.size(); i++) {
+			Note note = noteList.get(i);
 			for (int j = 0; j < note.getListOfLabel().size(); j++) {
 				if (note.getListOfLabel().get(j).getLabelId().equals(labelId)) {
 					note.getListOfLabel().get(j).setLabelName(labelName);
@@ -136,6 +144,7 @@ public class LabelServiceImpl implements LabelService {
 				}
 			}
 		}
+
 	}
 
 	/**
@@ -181,41 +190,45 @@ public class LabelServiceImpl implements LabelService {
 	 * @param labelId
 	 * @return list of note
 	 * @throws LabelNotFoundException
+	 * @throws GetLinkInfoException 
+	 * @throws NoteNotFoundException 
 	 */
 	@Override
-	public List<NoteDTO> getLabel(String userId, String labelId) throws LabelNotFoundException {
+	public List<NoteDTO> getLabel(String userId, String labelId) throws LabelNotFoundException, GetLinkInfoException, NoteNotFoundException {
 		Optional<Label> optionalLabel = labelRepository.findByLabelIdAndUserId(labelId, userId);
 
 		if (!optionalLabel.isPresent()) {
 			throw new LabelNotFoundException("No such label found");
 		}
 
-		List<Note> noteListByUserId = noteRepository.findAllByUserId(userId);
+		List<Note> noteList = noteRepository.findAllByUserIdAndTrash(userId, false);
 
-		List<NoteDTO> noteList = new ArrayList<>();
-
-		for (int i = 0; i < noteListByUserId.size(); i++) {
-			Note note = noteListByUserId.get(i);
-			if (!noteListByUserId.get(i).getTrash()) {
-				for (int j = 0; j < note.getListOfLabel().size(); j++) {
-					if (note.getListOfLabel().get(j).getLabelId().equals(labelId)) {
-
-						NoteDTO noteDto = new NoteDTO();
-						noteDto.setNoteId(note.getNoteId());
-						noteDto.setTitle(note.getTitle());
-						noteDto.setDescription(note.getDescription());
-						noteDto.setCreatedAt(note.getCreatedAt());
-						noteDto.setLastUpdated(note.getLastUpdated());
-						noteDto.setReminder(note.getReminder());
-						noteDto.setArchive(note.getArchive());
-						noteDto.setPin(note.getPin());
-						noteDto.setListOfLabel(note.getListOfLabel());
-
-						noteList.add(noteDto);
-					}
-				}
-			}
+		if (noteList.isEmpty()) {
+			throw new NoteNotFoundException("No Note Found");
 		}
-		return noteList;
+
+		List<NoteDTO> noteDtos = noteList.stream().map(filterNote -> modelMapper.map(filterNote, NoteDTO.class))
+				.collect(Collectors.toList());
+
+		for (int i = 0; i < noteList.size(); i++) {
+			List<String> urlList = noteList.get(i).getListOfUrl();
+
+			List<URLInfo> urlInfoList = new ArrayList<>();
+
+			for (int j = 0; j < urlList.size(); j++) {
+				urlInfoList.add(linkInfoProvider.getLinkInformation(urlList.get(j)));
+			}
+			noteDtos.get(i).setListOfUrl(urlInfoList);
+		}
+
+		List<NoteDTO> pinnedNoteDtoList = noteDtos.stream().filter(NoteDTO::getPin).collect(Collectors.toList());
+
+		List<NoteDTO> unpinnedNoteDtoList = noteDtos.stream().filter(noteStream -> !noteStream.getPin())
+				.collect(Collectors.toList());
+
+		List<NoteDTO> noteDtoList = Stream.concat(pinnedNoteDtoList.stream(), unpinnedNoteDtoList.stream())
+				.collect(Collectors.toList());
+
+		return noteDtoList;
 	}
 }

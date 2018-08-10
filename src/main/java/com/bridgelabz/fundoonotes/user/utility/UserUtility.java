@@ -2,27 +2,17 @@ package com.bridgelabz.fundoonotes.user.utility;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Date;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.xml.bind.DatatypeConverter;
-
-import org.springframework.beans.factory.annotation.Value;
-
 import com.bridgelabz.fundoonotes.user.exceptions.LoginException;
 import com.bridgelabz.fundoonotes.user.exceptions.RegistrationException;
 import com.bridgelabz.fundoonotes.user.models.Login;
 import com.bridgelabz.fundoonotes.user.models.Registration;
 import com.bridgelabz.fundoonotes.user.models.ResetPassword;
 import com.bridgelabz.fundoonotes.user.models.User;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtBuilder;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 
 public class UserUtility {
 

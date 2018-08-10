@@ -18,4 +18,5 @@ public interface LabelRepository extends MongoRepository<Label, String> {
 	public Optional<Label> findByLabelIdAndUserId(String labelId, String userId);
 	
 	public Optional<Label> findByLabelNameAndUserId(String labelName, String userId);
+	
 }

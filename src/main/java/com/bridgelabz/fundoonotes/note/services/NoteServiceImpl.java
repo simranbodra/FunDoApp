@@ -254,6 +254,7 @@ public class NoteServiceImpl implements NoteService {
 	public void updateNote(UpdateNote updateNote, String userId, String noteId)
 			throws NoteException, NoteNotFoundException, UnauthorizedException, ReminderException{
 
+		System.out.println(userId);
 		Optional<Note> optionalNote = noteRepository.findByNoteIdAndUserId(noteId, userId);
 
 		if (!optionalNote.isPresent()) {

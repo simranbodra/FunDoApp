@@ -52,21 +52,6 @@ public class UserController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
-	@RequestMapping(value = "/createFacebookAuthorization", method = RequestMethod.GET)
-	public String createFacebookAuthorization() {
-		return facebookService.createFacebookAuthorizationURL();
-	}
-	
-	@RequestMapping(value = "/facebook", method = RequestMethod.GET)
-	public void createFacebookAccessToken(@RequestParam String code) {
-		facebookService.createFacebookAccessToken(code);
-	}
-	
-	@RequestMapping(value = "/getName", method = RequestMethod.GET)
-	public String getNameResponse() {
-		return facebookService.getName();
-	}
-	
 	/**
 	 * For User login
 	 * @param login

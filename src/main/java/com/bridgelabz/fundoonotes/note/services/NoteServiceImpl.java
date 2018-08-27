@@ -2,6 +2,7 @@ package com.bridgelabz.fundoonotes.note.services;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -11,6 +12,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bridgelabz.fundoonotes.note.exceptions.GetLinkInfoException;
 import com.bridgelabz.fundoonotes.note.exceptions.InvalidLabelNameException;
@@ -31,11 +33,14 @@ import com.bridgelabz.fundoonotes.note.repositories.LabelElasticsearchRepository
 import com.bridgelabz.fundoonotes.note.repositories.LabelRepository;
 import com.bridgelabz.fundoonotes.note.repositories.NoteElasticsearchRepository;
 import com.bridgelabz.fundoonotes.note.repositories.NoteRepository;
-import com.bridgelabz.fundoonotes.note.utility.LinkInfoProvider;
 import com.bridgelabz.fundoonotes.note.utility.NoteUtility;
+import com.bridgelabz.fundoonotes.user.exceptions.FileConversionException;
+import com.bridgelabz.fundoonotes.user.services.ImageStorageService;
 
 @Service
 public class NoteServiceImpl implements NoteService {
+
+	private static final String SUFFIX = "/";
 
 	@Autowired
 	private NoteRepository noteRepository;
@@ -56,7 +61,10 @@ public class NoteServiceImpl implements NoteService {
 	private Environment environment;
 
 	@Autowired
-	private LinkInfoProvider linkInfoProvider;
+	private ContentScrapper contentScrapper;
+
+	@Autowired
+	private ImageStorageService imageStorageService;
 
 	/**
 	 * create a new note
@@ -71,7 +79,7 @@ public class NoteServiceImpl implements NoteService {
 	 */
 	@Override
 	public NoteDTO createNote(CreateNote newNote, String userId)
-			throws NoteException, ReminderException, GetLinkInfoException {
+			throws NoteException, ReminderException, GetLinkInfoException, ParseException {
 		NoteUtility.validateNewNote(newNote);
 
 		Note note = new Note();
@@ -109,6 +117,7 @@ public class NoteServiceImpl implements NoteService {
 					Label label = new Label();
 					label.setLabelName(labelNameList.get(i));
 					label.setUserId(userId);
+					label.setCreatedAt(NoteUtility.getCurrentDate());
 
 					labelRepository.save(label);
 
@@ -117,6 +126,7 @@ public class NoteServiceImpl implements NoteService {
 					LabelDTO viewLabelToSave = new LabelDTO();
 					viewLabelToSave.setLabelId(label.getLabelId());
 					viewLabelToSave.setLabelName(label.getLabelName());
+					viewLabelToSave.setCreatedAt(label.getCreatedAt());
 					toBeAddedLabels.add(viewLabelToSave);
 
 				} else {
@@ -127,6 +137,7 @@ public class NoteServiceImpl implements NoteService {
 							LabelDTO viewLabel = new LabelDTO();
 							viewLabel.setLabelName(optionalLabelToSave.get(j).getLabelName());
 							viewLabel.setLabelId(optionalLabelToSave.get(j).getLabelId());
+							viewLabel.setCreatedAt(optionalLabelToSave.get(j).getCreatedAt());
 							toBeAddedLabels.add(viewLabel);
 						}
 					}
@@ -138,23 +149,15 @@ public class NoteServiceImpl implements NoteService {
 
 		note.setListOfLabel(toBeAddedLabels);
 
-		String[] stringArray = newNote.getDescription().split(" ");
+		List<URLInfo> urlInfoList = contentScrapper.getAllLink(newNote.getDescription());
 
-		List<String> urlList = NoteUtility.getUrlList(stringArray);
-
-		note.setListOfUrl(urlList);
+		note.setListOfUrl(urlInfoList);
 
 		noteRepository.save(note);
 
 		noteElasticsearchRepository.save(note);
 
 		NoteDTO noteDto = modelMapper.map(note, NoteDTO.class);
-
-		List<URLInfo> urlInfoList = new ArrayList<>();
-		for (int j = 0; j < urlList.size(); j++) {
-			urlInfoList.add(linkInfoProvider.getLinkInformation(urlList.get(j)));
-		}
-		noteDto.setListOfUrl(urlInfoList);
 
 		return noteDto;
 	}
@@ -185,13 +188,6 @@ public class NoteServiceImpl implements NoteService {
 
 		NoteDTO noteDto = modelMapper.map(note, NoteDTO.class);
 
-		List<String> urlList = note.getListOfUrl();
-		List<URLInfo> urlInfoList = new ArrayList<>();
-		for (int j = 0; j < urlList.size(); j++) {
-			urlInfoList.add(linkInfoProvider.getLinkInformation(urlList.get(j)));
-		}
-		noteDto.setListOfUrl(urlInfoList);
-
 		return noteDto;
 
 	}
@@ -214,17 +210,6 @@ public class NoteServiceImpl implements NoteService {
 
 		List<NoteDTO> noteDtos = noteList.stream().map(filterNote -> modelMapper.map(filterNote, NoteDTO.class))
 				.collect(Collectors.toList());
-
-		for (int i = 0; i < noteList.size(); i++) {
-			List<String> urlList = noteList.get(i).getListOfUrl();
-
-			List<URLInfo> urlInfoList = new ArrayList<>();
-
-			for (int j = 0; j < urlList.size(); j++) {
-				urlInfoList.add(linkInfoProvider.getLinkInformation(urlList.get(j)));
-			}
-			noteDtos.get(i).setListOfUrl(urlInfoList);
-		}
 
 		List<NoteDTO> pinnedNoteDtoList = noteDtos.stream().filter(NoteDTO::getPin).collect(Collectors.toList());
 
@@ -249,12 +234,12 @@ public class NoteServiceImpl implements NoteService {
 	 * @throws UnauthorizedException
 	 * @throws ReminderException
 	 * @throws ParseException
+	 * @throws GetLinkInfoException
 	 */
 	@Override
-	public void updateNote(UpdateNote updateNote, String userId, String noteId)
-			throws NoteException, NoteNotFoundException, UnauthorizedException, ReminderException{
+	public void updateNote(UpdateNote updateNote, String userId, String noteId) throws NoteException,
+			NoteNotFoundException, UnauthorizedException, ReminderException, ParseException, GetLinkInfoException {
 
-		System.out.println(userId);
 		Optional<Note> optionalNote = noteRepository.findByNoteIdAndUserId(noteId, userId);
 
 		if (!optionalNote.isPresent()) {
@@ -280,11 +265,11 @@ public class NoteServiceImpl implements NoteService {
 			note.setColour(updateNote.getColour());
 		}
 
-		String[] stringArray = note.getDescription().split(" ");
+		List<URLInfo> urlInfoList = contentScrapper.getAllLink(note.getDescription());
 
-		List<String> urlList = NoteUtility.getUrlList(stringArray);
+		note.setListOfUrl(urlInfoList);
 
-		note.setListOfUrl(urlList);
+		note.setLastUpdated(NoteUtility.getCurrentDate());
 
 		noteRepository.save(note);
 
@@ -404,17 +389,6 @@ public class NoteServiceImpl implements NoteService {
 		List<NoteDTO> noteDtos = noteList.stream().map(filterNote -> modelMapper.map(filterNote, NoteDTO.class))
 				.collect(Collectors.toList());
 
-		for (int i = 0; i < noteList.size(); i++) {
-			List<String> urlList = noteList.get(i).getListOfUrl();
-
-			List<URLInfo> urlInfoList = new ArrayList<>();
-
-			for (int j = 0; j < urlList.size(); j++) {
-				urlInfoList.add(linkInfoProvider.getLinkInformation(urlList.get(j)));
-			}
-			noteDtos.get(i).setListOfUrl(urlInfoList);
-		}
-
 		return noteDtos;
 	}
 
@@ -465,7 +439,7 @@ public class NoteServiceImpl implements NoteService {
 	 */
 	@Override
 	public void addNoteReminder(String userId, String noteId, String reminderDate)
-			throws NoteNotFoundException, UnauthorizedException, ReminderException {
+			throws NoteNotFoundException, UnauthorizedException, ReminderException, ParseException {
 
 		NoteUtility.validateDate(reminderDate);
 
@@ -657,17 +631,6 @@ public class NoteServiceImpl implements NoteService {
 		List<NoteDTO> noteDtos = noteList.stream().map(filterNote -> modelMapper.map(filterNote, NoteDTO.class))
 				.collect(Collectors.toList());
 
-		for (int i = 0; i < noteList.size(); i++) {
-			List<String> urlList = noteList.get(i).getListOfUrl();
-
-			List<URLInfo> urlInfoList = new ArrayList<>();
-
-			for (int j = 0; j < urlList.size(); j++) {
-				urlInfoList.add(linkInfoProvider.getLinkInformation(urlList.get(j)));
-			}
-			noteDtos.get(i).setListOfUrl(urlInfoList);
-		}
-
 		List<NoteDTO> noteDtoList = noteDtos.stream().filter(NoteDTO::getArchive).collect(Collectors.toList());
 
 		return noteDtoList;
@@ -776,4 +739,118 @@ public class NoteServiceImpl implements NoteService {
 		noteElasticsearchRepository.save(note);
 	}
 
+	@Override
+	public List<NoteDTO> sortByTitleOrDate(String userId, String sortType, String format) throws NoteNotFoundException {
+		List<Note> noteList = noteRepository.findAllByUserIdAndTrash(userId, false);
+
+		if (noteList.isEmpty()) {
+			throw new NoteNotFoundException("No note found");
+		}
+
+		if (sortType == null || sortType.equalsIgnoreCase("Date")) {
+			if (format == null || format.equalsIgnoreCase("ascending")) {
+				return noteList.stream().sorted(Comparator.comparing(Note::getCreatedAt))
+						.map(sortedList -> modelMapper.map(sortedList, NoteDTO.class)).collect(Collectors.toList());
+			}
+
+			return noteList.stream().sorted(Comparator.comparing(Note::getCreatedAt).reversed())
+					.map(sortedList -> modelMapper.map(sortedList, NoteDTO.class)).collect(Collectors.toList());
+		}
+
+		if (format == null || format.equalsIgnoreCase("ascending")) {
+			return noteList.stream().sorted(Comparator.comparing(Note::getTitle))
+					.map(sortedList -> modelMapper.map(sortedList, NoteDTO.class)).collect(Collectors.toList());
+		}
+
+		return noteList.stream().sorted(Comparator.comparing(Note::getTitle).reversed())
+				.map(sortedList -> modelMapper.map(sortedList, NoteDTO.class)).collect(Collectors.toList());
+	}
+
+	@Override
+	public NoteDTO addImage(String userId, String noteId, MultipartFile image)
+			throws NoteNotFoundException, UnauthorizedException, FileConversionException {
+		Optional<Note> optionalNote = noteRepository.findByNoteIdAndUserId(noteId, userId);
+
+		if (!optionalNote.isPresent()) {
+			throw new NoteNotFoundException(environment.getProperty("NoteNotFound"));
+		}
+		if (!optionalNote.get().getUserId().equals(userId)) {
+			throw new UnauthorizedException(environment.getProperty("UnauthorizedUser"));
+		}
+
+		String folder = userId + SUFFIX + noteId;
+
+		imageStorageService.uploadFile(folder, image);
+
+		String picture = imageStorageService.getFile(folder, image.getOriginalFilename());
+
+		Note note = optionalNote.get();
+		List<String> imageUrls = note.getListOfImage();
+
+		imageUrls.add(picture);
+
+		note.setListOfImage(imageUrls);
+
+		noteRepository.save(note);
+
+		noteElasticsearchRepository.save(note);
+
+		NoteDTO noteDto = modelMapper.map(note, NoteDTO.class);
+
+		return noteDto;
+	}
+
+	@Override
+	public NoteDTO removeImage(String userId, String noteId, String imageName)
+			throws NoteNotFoundException, UnauthorizedException {
+		Optional<Note> optionalNote = noteRepository.findByNoteIdAndUserId(noteId, userId);
+
+		if (!optionalNote.isPresent()) {
+			throw new NoteNotFoundException(environment.getProperty("NoteNotFound"));
+		}
+		if (!optionalNote.get().getUserId().equals(userId)) {
+			throw new UnauthorizedException(environment.getProperty("UnauthorizedUser"));
+		}
+
+		String folder = userId + SUFFIX + noteId;
+
+		imageStorageService.deleteFile(folder, imageName);
+
+		String picture = imageStorageService.getFile(folder, imageName);
+
+		imageStorageService.deleteFile(folder, imageName);
+
+		Note note = optionalNote.get();
+		List<String> imageUrls = note.getListOfImage();
+		imageUrls.remove(picture);
+
+		note.setListOfImage(imageUrls);
+
+		noteRepository.save(note);
+
+		noteElasticsearchRepository.save(note);
+
+		NoteDTO noteDto = modelMapper.map(note, NoteDTO.class);
+
+		return noteDto;
+	}
+
+	@Override
+	public String getImageUrl(String userId, String noteId, String imageName)
+			throws NoteNotFoundException, UnauthorizedException {
+		Optional<Note> optionalNote = noteRepository.findByNoteIdAndUserId(noteId, userId);
+
+		if (!optionalNote.isPresent()) {
+			throw new NoteNotFoundException(environment.getProperty("NoteNotFound"));
+		}
+		if (!optionalNote.get().getUserId().equals(userId)) {
+			throw new UnauthorizedException(environment.getProperty("UnauthorizedUser"));
+		}
+
+		String folder = userId + SUFFIX + noteId;
+
+		String picture = imageStorageService.getFile(folder, imageName);
+
+		return picture;
+	}
 }

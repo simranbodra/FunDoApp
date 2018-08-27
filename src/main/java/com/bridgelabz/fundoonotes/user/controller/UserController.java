@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.bridgelabz.fundoonotes.user.exceptions.FileConversionException;
 import com.bridgelabz.fundoonotes.user.exceptions.LoginException;
 import com.bridgelabz.fundoonotes.user.exceptions.RegistrationException;
 import com.bridgelabz.fundoonotes.user.exceptions.UserNotActivatedException;
@@ -21,7 +23,7 @@ import com.bridgelabz.fundoonotes.user.models.Login;
 import com.bridgelabz.fundoonotes.user.models.Registration;
 import com.bridgelabz.fundoonotes.user.models.ResetPassword;
 import com.bridgelabz.fundoonotes.user.models.Response;
-import com.bridgelabz.fundoonotes.user.services.FacebookService;
+import com.bridgelabz.fundoonotes.user.models.UserProfile;
 import com.bridgelabz.fundoonotes.user.services.UserService;
 
 @RestController
@@ -29,12 +31,10 @@ public class UserController {
 
 	@Autowired
 	UserService userService;
-	
-	@Autowired
-	private FacebookService facebookService;
 
 	/**
 	 * TO register a user
+	 * 
 	 * @param registration
 	 * @return ResponseDTO
 	 * @throws RegistrationException
@@ -54,9 +54,10 @@ public class UserController {
 
 	/**
 	 * For User login
+	 * 
 	 * @param login
 	 * @param resp
-	 * @return ResponseDTO 
+	 * @return ResponseDTO
 	 * @throws LoginException
 	 * @throws UserNotFoundException
 	 * @throws UserNotActivatedException
@@ -66,9 +67,9 @@ public class UserController {
 			throws LoginException, UserNotFoundException, UserNotActivatedException {
 
 		String token = userService.login(login);
-		
+
 		resp.setHeader("token", token);
-		
+
 		Response response = new Response();
 		response.setMessage("Login Successful");
 		response.setStatus(20);
@@ -78,6 +79,7 @@ public class UserController {
 
 	/**
 	 * To activate account after registration
+	 * 
 	 * @param token
 	 * @return ResponseDTO
 	 * @throws LoginException
@@ -95,14 +97,16 @@ public class UserController {
 	}
 
 	/**
-	 * To send reset password link 
+	 * To send reset password link
+	 * 
 	 * @param email
 	 * @return ResponseDTO
 	 * @throws MessagingException
 	 * @throws UserNotFoundException
 	 */
 	@RequestMapping(value = "/resetPasswordLink", method = RequestMethod.GET)
-	public ResponseEntity<Response> resetPasswordLink(@RequestParam("email") String email) throws MessagingException, UserNotFoundException {
+	public ResponseEntity<Response> resetPasswordLink(@RequestParam("email") String email)
+			throws MessagingException, UserNotFoundException {
 
 		userService.sendPasswordLink(email);
 
@@ -115,6 +119,7 @@ public class UserController {
 
 	/**
 	 * To reset password for the user
+	 * 
 	 * @param token
 	 * @param resetPassword
 	 * @return ResponseDTO
@@ -131,5 +136,51 @@ public class UserController {
 		response.setStatus(32);
 
 		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+	}
+
+	/**
+	 * To add profile picture
+	 * 
+	 * @param token
+	 * @param image
+	 * @return picture link
+	 * @throws FileConversionException
+	 */
+	@RequestMapping(value = "/addProfilePicture", method = RequestMethod.PUT)
+	public ResponseEntity<String> addProfilePicture(@RequestHeader("token") String token,
+			@RequestParam MultipartFile image) throws FileConversionException {
+		String link = userService.addProfilePicture(token, image);
+
+		return new ResponseEntity<>(link, HttpStatus.OK);
+	}
+
+	/**
+	 * To set default profile picture
+	 * 
+	 * @param token
+	 * @return picture link
+	 */
+	@RequestMapping(value = "/removeProfilePicture", method = RequestMethod.PUT)
+	public ResponseEntity<Response> removeProfilePicture(@RequestHeader("token") String token) {
+		userService.removeProfilePicture(token);
+
+		Response response = new Response();
+		response.setMessage("Default profile picture set successfully");
+		response.setStatus(33);
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	/**
+	 * To get profile details
+	 * 
+	 * @param token
+	 * @return
+	 */
+	@RequestMapping(value = "/getProfileDetails", method = RequestMethod.GET)
+	public ResponseEntity<UserProfile> getProfileDetails(@RequestHeader("token") String token) {
+		UserProfile userProfile = userService.getProfileDetails(token);
+
+		return new ResponseEntity<>(userProfile, HttpStatus.ACCEPTED);
 	}
 }

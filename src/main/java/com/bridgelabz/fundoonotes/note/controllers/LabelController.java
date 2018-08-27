@@ -40,7 +40,7 @@ public class LabelController {
 	 * @throws LabelException
 	 * @throws InvalidLabelNameException
 	 */
-	@RequestMapping(value = "/createLabel", method = RequestMethod.POST)
+	@RequestMapping(value = "/create", method = RequestMethod.POST)
 	public ResponseEntity<LabelDTO> createLabel(HttpServletRequest request, @RequestParam String labelName)
 			throws LabelException, InvalidLabelNameException {
 		String userId = (String) request.getAttribute("UserId");
@@ -77,7 +77,7 @@ public class LabelController {
 	 * @throws UnauthorizedException
 	 * @throws LabelNotFoundException
 	 */
-	@RequestMapping(value = "/updateLabel/{labelId}", method = RequestMethod.PUT)
+	@RequestMapping(value = "/update/{labelId}", method = RequestMethod.PUT)
 	public ResponseEntity<Response> editLabel(HttpServletRequest request, @PathVariable String labelId,
 			@RequestParam String labelName) throws UnauthorizedException, LabelNotFoundException {
 		String userId = (String) request.getAttribute("UserId");
@@ -99,7 +99,7 @@ public class LabelController {
 	 * @throws UnauthorizedException
 	 * @throws LabelNotFoundException
 	 */
-	@RequestMapping(value = "/deleteLabel/{labelId}", method = RequestMethod.DELETE)
+	@RequestMapping(value = "/delete/{labelId}", method = RequestMethod.DELETE)
 	public ResponseEntity<Response> deleteLabel(HttpServletRequest request, @PathVariable String labelId)
 			throws LabelNotFoundException {
 		String userId = (String) request.getAttribute("UserId");
@@ -130,5 +130,24 @@ public class LabelController {
 		List<NoteDTO> notes = labelService.getLabel(userId, labelId);
 
 		return new ResponseEntity<>(notes, HttpStatus.OK);
+	}
+
+	/**
+	 * To sort labels by name
+	 * 
+	 * @param request
+	 * @param format
+	 * @return List of NoteDTO
+	 * @throws LabelNotFoundException
+	 */
+	@RequestMapping(value = "/sortByNameOrDate", method = RequestMethod.GET)
+	public ResponseEntity<List<LabelDTO>> sortLabelsByName(HttpServletRequest request,
+			@RequestParam(required = false) String sortType, @RequestParam(required = false) String format)
+			throws LabelNotFoundException {
+		String userId = (String) request.getAttribute("UserId");
+
+		List<LabelDTO> noteDtoList = labelService.sortByName(userId, sortType, format);
+
+		return new ResponseEntity<>(noteDtoList, HttpStatus.OK);
 	}
 }

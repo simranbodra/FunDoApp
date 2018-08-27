@@ -2,6 +2,9 @@ package com.bridgelabz.fundoonotes.note.utility;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -14,8 +17,7 @@ import com.bridgelabz.fundoonotes.note.models.CreateNote;
 
 public class NoteUtility {
 
-	private static final Pattern URL_REGEX = Pattern
-			.compile("(http(s)?://)?([\\w-]+\\.)+[\\w-]+(/[\\w- ;,./?%&=]*)?");
+	private static final Pattern URL_REGEX = Pattern.compile("(http(s)?://)?([\\w-]+\\.)+[\\w-]+(/[\\w- ;,./?%&=]*)?");
 
 	/**
 	 * validation for the new note creation
@@ -50,20 +52,14 @@ public class NoteUtility {
 	 * @throws ReminderException
 	 * @throws ParseException
 	 */
-	public static boolean validateDate(String date) throws ReminderException {
-		Date reminder = null;
-		try {
-			reminder = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").parse(date);
-		}
-		catch(ParseException exception) {
-			throw new ReminderException("Error while parsing reminder");
-		}
-
-		if (reminder.before(getCurrentDate())) {
+	public static boolean validateDate(String date) throws ReminderException, ParseException {
+		Date reminder = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").parse(date);
+		
+		if(reminder.before(getCurrentDate())) {
 			throw new ReminderException("Date and time should be current date and time or after");
 		}
 		return true;
-	}
+}
 
 	/**
 	 * To validate url

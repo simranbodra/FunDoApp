@@ -3,6 +3,8 @@ package com.bridgelabz.fundoonotes.note.services;
 import java.text.ParseException;
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.bridgelabz.fundoonotes.note.exceptions.GetLinkInfoException;
 import com.bridgelabz.fundoonotes.note.exceptions.InvalidLabelNameException;
 import com.bridgelabz.fundoonotes.note.exceptions.LabelException;
@@ -13,6 +15,7 @@ import com.bridgelabz.fundoonotes.note.exceptions.ReminderException;
 import com.bridgelabz.fundoonotes.note.exceptions.UnauthorizedException;
 import com.bridgelabz.fundoonotes.note.models.CreateNote;
 import com.bridgelabz.fundoonotes.note.models.UpdateNote;
+import com.bridgelabz.fundoonotes.user.exceptions.FileConversionException;
 import com.bridgelabz.fundoonotes.note.models.NoteDTO;
 
 public interface NoteService {
@@ -29,7 +32,7 @@ public interface NoteService {
 	 * @throws GetLinkInfoException
 	 */
 	public NoteDTO createNote(CreateNote newNote, String userId)
-			throws NoteException, ReminderException, GetLinkInfoException;
+			throws NoteException, ReminderException, GetLinkInfoException, ParseException;
 
 	/**
 	 * To update a note
@@ -42,9 +45,10 @@ public interface NoteService {
 	 * @throws UnauthorizedException
 	 * @throws ReminderException
 	 * @throws ParseException
+	 * @throws GetLinkInfoException
 	 */
-	public void updateNote(UpdateNote updateNote, String userId, String noteId)
-			throws NoteException, NoteNotFoundException, UnauthorizedException, ReminderException;
+	public void updateNote(UpdateNote updateNote, String userId, String noteId) throws NoteException,
+			NoteNotFoundException, UnauthorizedException, ReminderException, ParseException, GetLinkInfoException;
 
 	/**
 	 * Move note to trash
@@ -134,7 +138,7 @@ public interface NoteService {
 	 * @throws ParseException
 	 */
 	public void addNoteReminder(String userId, String noteId, String reminderDate)
-			throws NoteNotFoundException, UnauthorizedException, ReminderException;
+			throws NoteNotFoundException, UnauthorizedException, ReminderException, ParseException;
 
 	/**
 	 * To remove reminder from note
@@ -223,5 +227,50 @@ public interface NoteService {
 	 */
 	public void deleteNoteLabel(String userId, String noteId, String labelId)
 			throws NoteNotFoundException, UnauthorizedException, LabelNotFoundException;
+
+	/**
+	 * To sort note by name
+	 * 
+	 * @param userId
+	 * @param format
+	 * @param format2
+	 * @return NoteDTO List
+	 * @throws NoteNotFoundException
+	 */
+	public List<NoteDTO> sortByTitleOrDate(String userId, String format, String format2) throws NoteNotFoundException;
+
+	/**
+	 * To add image to note
+	 * @param userId
+	 * @param image
+	 * @param noteId
+	 * @return NoteDTO
+	 * @throws NoteNotFoundException
+	 * @throws UnauthorizedException
+	 * @throws FileConversionException 
+	 */
+	public NoteDTO addImage(String userId, String noteId, MultipartFile image) throws NoteNotFoundException, UnauthorizedException, FileConversionException;
+
+	/**
+	 * To remove image from note
+	 * @param userId
+	 * @param noteId
+	 * @param imageName
+	 * @return NoteDTO
+	 * @throws NoteNotFoundException
+	 * @throws UnauthorizedException
+	 */
+	public NoteDTO removeImage(String userId, String noteId, String imageName) throws NoteNotFoundException, UnauthorizedException;
+
+	/**
+	 * To get image on the note
+	 * @param userId
+	 * @param noteId
+	 * @param imageName
+	 * @return Image URL
+	 * @throws NoteNotFoundException
+	 * @throws UnauthorizedException
+	 */
+	public String getImageUrl(String userId, String noteId, String imageName) throws NoteNotFoundException, UnauthorizedException;
 
 }

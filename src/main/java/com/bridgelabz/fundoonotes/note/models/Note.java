@@ -1,5 +1,6 @@
 package com.bridgelabz.fundoonotes.note.models;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -22,7 +23,8 @@ public class Note {
 	private boolean pin;
 	private boolean archive;
 	private List<LabelDTO> listOfLabel;
-	private List<String> listOfUrl;
+	private List<URLInfo> listOfUrl;
+	private List<String> listOfImage=new ArrayList<>();
 
 	public Note() {
 		super();
@@ -124,12 +126,20 @@ public class Note {
 		this.listOfLabel = listOfLabel;
 	}
 
-	public List<String> getListOfUrl() {
+	public List<URLInfo> getListOfUrl() {
 		return listOfUrl;
 	}
 
-	public void setListOfUrl(List<String> listOfUrl) {
+	public void setListOfUrl(List<URLInfo> listOfUrl) {
 		this.listOfUrl = listOfUrl;
+	}
+
+	public List<String> getListOfImage() {
+		return listOfImage;
+	}
+
+	public void setListOfImage(List<String> listOfImage) {
+		this.listOfImage = listOfImage;
 	}
 
 	@Override
@@ -137,7 +147,7 @@ public class Note {
 		return "Note [noteId=" + noteId + ", userId=" + userId + ", title=" + title + ", description=" + description
 				+ ", colour=" + colour + ", createdAt=" + createdAt + ", lastUpdated=" + lastUpdated + ", reminder="
 				+ reminder + ", trash=" + trash + ", pin=" + pin + ", archive=" + archive + ", listOfLabel="
-				+ listOfLabel + ", listOfUrl=" + listOfUrl + "]";
+				+ listOfLabel + ", listOfUrl=" + listOfUrl + ", listOfImage=" + listOfImage + "]";
 	}
 
 }

@@ -15,4 +15,5 @@ public interface TokenRepository {
 	 * @return
 	 */
 	public String get(String token);
+	
 }

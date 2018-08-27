@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
-import com.bridgelabz.fundoonotes.user.repositories.TokenRepository;
+import com.bridgelabz.fundoonotes.user.repositories.UserRepository;
 import com.bridgelabz.fundoonotes.user.utility.JWTokenProvider;
 
 @Component
@@ -16,7 +16,7 @@ public class NoteInterceptor implements HandlerInterceptor {
 	Logger log = org.slf4j.LoggerFactory.getLogger(this.getClass());
 
 	@Autowired
-	private TokenRepository tokenRepository;
+	private UserRepository userRepository;
 
 	@Autowired
 	private JWTokenProvider tokenProvider;
@@ -29,12 +29,10 @@ public class NoteInterceptor implements HandlerInterceptor {
 
 		String userId = tokenProvider.parseJWT(token);
 
-		if (!tokenRepository.get(userId).isEmpty() && tokenRepository.get(userId).equals(token)) {
-			System.out.println("true");
+		if (userRepository.findById(userId).isPresent()) {
 			request.setAttribute("UserId", userId);
 			return true;
 		}
-		System.out.println("false");
 		return false;
 	}
 

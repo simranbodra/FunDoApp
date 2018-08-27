@@ -5,24 +5,26 @@ import org.springframework.data.elasticsearch.annotations.Document;
 
 @Document(indexName = "usersindex", type = "users")
 public class User {
-	
+
 	@Id
 	private String userId;
-	
+
 	private String userName;
-	
+
 	private String email;
-	
+
 	private String phoneNumber;
-	
+
 	private String password;
-	
+
 	private boolean active;
+
+	private String profileImage;
 
 	public User() {
 		super();
 	}
-	
+
 	public String getUserId() {
 		return userId;
 	}
@@ -62,13 +64,21 @@ public class User {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	
+
 	public boolean isActive() {
 		return active;
 	}
 
 	public void setActive(boolean status) {
 		active = status;
+	}
+
+	public String getProfileImage() {
+		return profileImage;
+	}
+
+	public void setProfileImage(String profileImage) {
+		this.profileImage = profileImage;
 	}
 
 }

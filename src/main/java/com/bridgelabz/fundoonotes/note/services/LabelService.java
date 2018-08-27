@@ -15,6 +15,7 @@ public interface LabelService {
 
 	/**
 	 * To create a label
+	 * 
 	 * @param userId
 	 * @param labelName
 	 * @return LabelDTO
@@ -25,6 +26,7 @@ public interface LabelService {
 
 	/**
 	 * To list of label created
+	 * 
 	 * @param userId
 	 * @return LabelDTO list
 	 * @throws LabelNotFoundException
@@ -33,6 +35,7 @@ public interface LabelService {
 
 	/**
 	 * To update label name
+	 * 
 	 * @param userId
 	 * @param labelId
 	 * @param labelName
@@ -41,23 +44,38 @@ public interface LabelService {
 	 */
 	public void updateLabel(String userId, String labelId, String labelName)
 			throws UnauthorizedException, LabelNotFoundException;
-	
+
 	/**
 	 * To delete a label
+	 * 
 	 * @param userId
 	 * @param labelId
 	 * @throws LabelNotFoundException
 	 */
 	public void deleteLabel(String userId, String labelId) throws LabelNotFoundException;
-	
+
 	/**
 	 * To get all notes having a particular label
+	 * 
 	 * @param userId
 	 * @param labelId
 	 * @return
 	 * @throws LabelNotFoundException
-	 * @throws GetLinkInfoException 
-	 * @throws NoteNotFoundException 
+	 * @throws GetLinkInfoException
+	 * @throws NoteNotFoundException
 	 */
-	public List<NoteDTO> getLabel(String userId, String labelId) throws LabelNotFoundException, GetLinkInfoException, NoteNotFoundException;
+	public List<NoteDTO> getLabel(String userId, String labelId)
+			throws LabelNotFoundException, GetLinkInfoException, NoteNotFoundException;
+
+	/**
+	 * To sort labels by name
+	 * 
+	 * @param userId
+	 * @param format
+	 * @param format
+	 * @return LabelDTO list
+	 * @throws LabelNotFoundException
+	 */
+	public List<LabelDTO> sortByName(String userId, String sortType, String format) throws LabelNotFoundException;
+
 }

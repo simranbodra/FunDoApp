@@ -1,23 +1,26 @@
-package com.bridgelabz.fundoonotes.note.utility;
+package com.bridgelabz.fundoonotes.note.services;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.bridgelabz.fundoonotes.note.exceptions.GetLinkInfoException;
 import com.bridgelabz.fundoonotes.note.models.URLInfo;
+import com.bridgelabz.fundoonotes.note.utility.NoteUtility;
 
-@Component
-public class LinkInfoProvider {
+@Service
+public class JsoupContentScrapper implements ContentScrapper {
 
+	@Override
 	public URLInfo getLinkInformation(String link) throws GetLinkInfoException {
-		Document doc = null;
 		String description = null;
 		String imageUrl = null;
 		try {
-			doc = Jsoup.connect(link).get();
+			Document doc = Jsoup.connect(link).get();
 			description = doc.select("meta[name=description]").get(0).attr("content");
 			imageUrl = doc.select("img[src~=(?i)\\.(png|jpe?g|gif)]").attr("src");
 		} catch (IOException exception) {
@@ -30,5 +33,19 @@ public class LinkInfoProvider {
 		urlInfo.setDescription(description);
 
 		return urlInfo;
+	}
+
+	@Override
+	public List<URLInfo> getAllLink(String description) throws GetLinkInfoException {
+		String[] stringArray = description.split(" ");
+
+		List<String> urlList = NoteUtility.getUrlList(stringArray);
+
+		List<URLInfo> urlInfoList = new ArrayList<>();
+		for (int j = 0; j < urlList.size(); j++) {
+			urlInfoList.add(getLinkInformation(urlList.get(j)));
+		}
+
+		return urlInfoList;
 	}
 }

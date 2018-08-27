@@ -15,6 +15,7 @@ public class NoteDTO {
 	private boolean archive;
 	private List<LabelDTO> listOfLabel;
 	private List<URLInfo> listOfUrl;
+	private List<String> listOfImage;
 
 	public NoteDTO() {
 		super();
@@ -98,6 +99,14 @@ public class NoteDTO {
 
 	public void setListOfUrl(List<URLInfo> listOfUrl) {
 		this.listOfUrl = listOfUrl;
+	}
+	
+	public List<String> getListOfImage() {
+		return listOfImage;
+	}
+
+	public void setListOfImage(List<String> listOfImage) {
+		this.listOfImage = listOfImage;
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package com.bridgelabz.fundoonotes.note.models;
 
+import java.util.Date;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 
@@ -10,6 +12,7 @@ public class Label {
 	private String labelId;
 	private String labelName;
 	private String userId;
+	private Date createdAt;
 
 	public Label() {
 		super();
@@ -37,5 +40,19 @@ public class Label {
 
 	public void setUserId(String userId) {
 		this.userId = userId;
+	}
+
+	public Date getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(Date createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	@Override
+	public String toString() {
+		return "Label [labelId=" + labelId + ", labelName=" + labelName + ", userId=" + userId + ", createdAt="
+				+ createdAt + "]";
 	}
 }

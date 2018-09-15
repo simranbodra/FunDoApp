@@ -1,5 +1,6 @@
 package com.bridgelabz.fundoonotes.note.services;
 
+import java.io.File;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -801,7 +802,7 @@ public class NoteServiceImpl implements NoteService {
 	}
 
 	@Override
-	public NoteDTO removeImage(String userId, String noteId, String imageName)
+	public NoteDTO removeImage(String userId, String noteId, String imageUrl)
 			throws NoteNotFoundException, UnauthorizedException {
 		Optional<Note> optionalNote = noteRepository.findByNoteIdAndUserId(noteId, userId);
 
@@ -812,17 +813,16 @@ public class NoteServiceImpl implements NoteService {
 			throw new UnauthorizedException(environment.getProperty("UnauthorizedUser"));
 		}
 
+		File file = new File(imageUrl);
+		String fileName = file.getAbsolutePath().substring(file.getAbsolutePath().lastIndexOf(SUFFIX) + 1);
+
 		String folder = userId + SUFFIX + noteId;
 
-		imageStorageService.deleteFile(folder, imageName);
-
-		String picture = imageStorageService.getFile(folder, imageName);
-
-		imageStorageService.deleteFile(folder, imageName);
+		imageStorageService.deleteFile(folder, fileName);
 
 		Note note = optionalNote.get();
 		List<String> imageUrls = note.getListOfImage();
-		imageUrls.remove(picture);
+		imageUrls.remove(imageUrl);
 
 		note.setListOfImage(imageUrls);
 

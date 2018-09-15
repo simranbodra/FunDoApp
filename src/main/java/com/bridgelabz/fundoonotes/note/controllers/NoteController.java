@@ -484,17 +484,17 @@ public class NoteController {
 	 * 
 	 * @param request
 	 * @param noteId
-	 * @param imageName
+	 * @param imageUrl
 	 * @return NoteDTO
 	 * @throws NoteNotFoundException
 	 * @throws UnauthorizedException
 	 */
 	@RequestMapping(value = "/removeImage/{noteId}", method = RequestMethod.GET)
 	public ResponseEntity<NoteDTO> removeImage(HttpServletRequest request, @PathVariable String noteId,
-			@RequestParam String imageName) throws NoteNotFoundException, UnauthorizedException {
+			@RequestParam String imageUrl) throws NoteNotFoundException, UnauthorizedException {
 		String userId = (String) request.getAttribute("UserId");
 
-		NoteDTO noteDto = noteService.removeImage(userId, noteId, imageName);
+		NoteDTO noteDto = noteService.removeImage(userId, noteId, imageUrl);
 
 		return new ResponseEntity<>(noteDto, HttpStatus.OK);
 	}

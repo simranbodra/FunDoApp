@@ -33,7 +33,6 @@ com/bridgelabz/fundoonotes/note/repositories/LabelRepository.class
 com/bridgelabz/fundoonotes/user/services/MailService.class
 com/bridgelabz/fundoonotes/user/models/Mail.class
 com/bridgelabz/fundoonotes/note/models/LabelDTO.class
-com/bridgelabz/fundoonotes/user/configurations/RabbitMQConfiuration.class
 com/bridgelabz/fundoonotes/note/exceptions/UnauthorizedException.class
 com/bridgelabz/fundoonotes/note/exceptions/LabelException.class
 com/bridgelabz/fundoonotes/user/rabbitmq/MailProducerServiceImpl.class
@@ -58,6 +57,5 @@ com/bridgelabz/fundoonotes/note/exceptions/GetLinkInfoException.class
 com/bridgelabz/fundoonotes/note/models/CreateNote.class
 com/bridgelabz/fundoonotes/note/services/LabelService.class
 com/bridgelabz/fundoonotes/user/exceptions/LoginException.class
-com/bridgelabz/fundoonotes/note/utility/LinkInfoProvider.class
 com/bridgelabz/fundoonotes/note/exceptions/NoteException.class
 com/bridgelabz/fundoonotes/note/interceptors/NoteInterceptor.class

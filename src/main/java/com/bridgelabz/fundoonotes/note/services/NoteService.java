@@ -260,7 +260,7 @@ public interface NoteService {
 	 * @throws NoteNotFoundException
 	 * @throws UnauthorizedException
 	 */
-	public NoteDTO removeImage(String userId, String noteId, String imageName) throws NoteNotFoundException, UnauthorizedException;
+	public NoteDTO removeImage(String userId, String noteId, String imageUrl) throws NoteNotFoundException, UnauthorizedException;
 
 	/**
 	 * To get image on the note

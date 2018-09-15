@@ -222,7 +222,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public void removeProfilePicture(String token) {
 		String userId = tokenProvider.parseJWT(token);
-
+		
 		String folder = userId + SUFFIX + profilePictures;
 
 		String defaultPicture = imageStorageService.getFile(folder, defaultProfileImage);
